@@ -1,10 +1,10 @@
-# Notes on the tools of semi-automatic registration of images and the visualisation
+# Notes on the tools of semi-automatic registration of images and visualisation
 
 ![alt text](https://raw.githubusercontent.com/itownsResearch/docs/master/oldProj2.gif "Alegoria")
 
 ## Installation
 
-The alegoria Web Tools use iTowns as a submodules so in order to get the sources and the builts:
+The alegoria Web Tools use iTowns as a submodule so in order to get the sources and the builts:
 
 ```
 git clone --recursive https://github.com/itownsResearch/alegoria
