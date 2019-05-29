@@ -1,0 +1,6 @@
+Exit with code 1 
+Generated from line 205  of file C:\projects\micmac-uct71\src\util\error.cpp 
+PID=18496
+Context=[cEliseFatalErrorHandler::cEFEH_OnErreur]
+GMEC:mes=Exit XML Matching Specif Error line=1981 file=C:\projects\micmac-uct71\src\util\xml.cpp
+MM3D-Command=["C:\micmac_win\bin\mm3d.exe" "aspro" "1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.jpg" "Ori-CalInit" "gcp_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml" "appuis_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml" ]

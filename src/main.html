@@ -1,0 +1,31 @@
+<!-- This is the main page of the project
+it has two main components:
+- a 2D scene where we placed a historical image and where the user identifies 2D points by clicking (Alt+left mouse click)
+- a 3D scene that consists of a point cloud and where the user identifies the corresponding 3D points of the previously identified ones
+As well as 2 buttons: 
+- a validate button that launches MicMac computations after the user is done with identifying points
+- and a render button that is clickable after MicMac computations are done and which redirects the user to the Rendering page where he can interacts with the result
+--->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Géolocalisation interactive des images</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="threejs/build/three.min.js"></script>
+    <script src="threejs/examples/js/controls/OrbitControls.js"></script>
+    <script src="threejs/examples/js/loaders/PLYLoader.js"></script>
+    <script src="photogrammetic_camera/three-photogrammetric-camera.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
+</head>
+<body>
+    <img id="img" src="../data/chambord.jpg" alt="murpierrerue" style="width:600px;height:400px" onmousedown="getImgCoordOnClick(event)">
+    <div id="model" onmousedown="get3dCoordOnClick(event)"></div>
+    <button type="button" onclick="launchMicMac(event)">Validate</button>
+    <input type=button onClick="parent.open('render.html')" value='Render'>
+    <script src="scene2d.js"></script>
+    <script src="scene3d.js"></script>
+    <script src="launchMicMac.js"></script>
+</body>
+</html>

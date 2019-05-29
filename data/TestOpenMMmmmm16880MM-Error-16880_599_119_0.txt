@@ -1,0 +1,4 @@
+Exit with code -1 
+Generated from line 1019  of file C:\projects\micmac-uct71\src\util\arg_main.cpp 
+PID=16880
+Context=[System-call :exiv2 -m ./ExivBatchFile.txt FRAN_0207_0648_L.jpg]

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>THREE - Photogrammetric Camera</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                overflow: hidden;
+                margin: 0;
+            }
+            #help {
+              margin: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id='help'>
+            <h1>Image Based Rendering of <a href="https://github.com/micmacIGN">Micmac</a> datasets</h1>
+            <form onsubmit="return onFilesSubmit(this)"><input id="files" type="file" multiple><input type="submit"></form>
+            You can open Micmac files here using drag and drop or here
+            <ul>
+                <li>Images: {name}.jpg files</li>
+                <li>Orientations: Orientation-{name}.{ext}.xml (orientations and images are matched by name)</li>
+                <li>Intrinsics: AutoCal*.xml (must be drag-and-dropped jointly with orientations that share its intrinsics)</li>
+                <li>PointClouds: *.ply (eg the AperiCloud)</li>
+            </ul>
+
+            <p>The scene is colored by the intrinsic colors of the pointcloud, replaced by the unprojection of the image from the current texture camera. The scene is composed of :</p>
+            <ul>
+                <li>a large view-centered sphere (500m)</li>
+                <li>an horizontal plane at a given absolute altitude</li>
+                <li>the loaded point clouds if any.</li>
+            </ul>
+            <p><img src="../data/uv.jpg" width=30px/> An orientation with no image loaded shows this calibration texture by default. </p>
+
+            <p>Keyboard Actions :</p>
+            <ul>
+                <li>&darr;/&uarr;: move the view camera to the previous/next image</li>
+                <li>&larr;/&rarr;: move the texture camera to the previous/next image</li>
+                <li>PageDown/PageUp: move both the texture and the view cameras to the previous/next image</li>
+                <li>t: set the texture camera to the current view camera</li>
+                <li>v: set the view camera to the current texture camera</li>
+                <li>-/+: decrease/increase the point size</li>
+                <li>c: print the current camera in the console</li>
+                <li>p: print the current camera position in the console</li>
+                <li>h: show/hide the GUI</li>
+            </ul>
+            Mathieu Brédif (<a href="http://recherche.ign.fr/labos/matis/~bredif">IGN ENSG, Lastig/Geovis, Univ. Paris Est</a>, <a href="http://github.com/mbredif/three-photogrammetric-camera">github</a>)
+        </div>
+        <script src="photogrammetic_camera/three-photogrammetric-camera.js"></script>
+        <script>
+            var THREE = ThreePhotogrammetricCamera.THREE;
+            var PhotogrammetricCamera = ThreePhotogrammetricCamera.PhotogrammetricCamera;
+            var MatisOrientationParser = ThreePhotogrammetricCamera.MatisOrientationParser;
+            var MicmacOrientationParser = ThreePhotogrammetricCamera.MicmacOrientationParser;
+            var FetchSource = ThreePhotogrammetricCamera.FetchSource;
+            var FilesSource = ThreePhotogrammetricCamera.FilesSource;
+            var OrientedImageMaterial = ThreePhotogrammetricCamera.OrientedImageMaterial;
+        </script>
+        <script src="photogrammetic_camera/dat.gui.min.js"></script>
+        <script src="threejs/examples/js/controls/OrbitControls.js"></script>
+        <script src="threejs/examples/js/loaders/PLYLoader.js"></script>
+        <script>
+            var orbitTarget, orbitControls;
+            var scene, renderer, plyGroup, cameras;
+            var textureMaterial, wireMaterial, viewMaterialOptions = {}, viewMaterials = {};
+            var textures = {};
+            var prevCamera = new PhotogrammetricCamera();
+            var viewCamera = new PhotogrammetricCamera();
+            var nextCamera = new PhotogrammetricCamera();
+            var textureCamera = viewCamera;
+            var duration = 0.3;
+            var useCustomCameraHelper = true;
+            var scenes;
+            var todos = [];
+            var plane, sphere;
+            viewCamera.zoom = 0.8; // zoom out a bit to see the image borders
+            viewCamera.up.set(0, 0, 1);
+
+            var addFiles;
+            function onFilesSubmit(form) {
+                addFiles(form.files.files);
+                return false;
+            }
+
+            function init() {
+                var container = document.createElement( 'div' );
+                document.body.appendChild( container );
+                scene = new THREE.Scene();
+                cameras = new THREE.Group();
+                cameras.visible = false;
+                scene.add(cameras);
+                scene.add(viewCamera);
+                var textureLoader = new THREE.TextureLoader();
+                const uvTexture = textureLoader.load('../data/uv.jpg');
+
+                textureMaterial = new OrientedImageMaterial({
+                    map: uvTexture,
+                    size: 2,
+                    vertexColors: THREE.VertexColors,
+                    sizeAttenuation: false,
+                    blending: THREE.NormalBlending,
+                });
+                sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-500, 32, 32), textureMaterial);
+                plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(1000, 1000), textureMaterial);
+                viewCamera.add(sphere);
+                scene.add(plane);
+
+                // materials
+                wireMaterial = new THREE.MeshBasicMaterial( {color: 0x00ffff, wireframe: true} );
+                viewMaterialOptions = {
+                    map: uvTexture,
+                    opacity: 1,
+                    transparent: true,
+                    blending: THREE.NormalBlending,
+                };
+
+                // renderer
+
+                renderer = new THREE.WebGLRenderer( { antialias: true } );
+                renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                container.appendChild( renderer.domElement );
+
+                // resize
+
+                window.addEventListener( 'resize', onWindowResize, false );
+
+
+                // controls
+                orbitControls = new THREE.OrbitControls( viewCamera, renderer.domElement );
+                orbitControls.enableDamping = false;
+                orbitControls.screenSpacePanning = false;
+                orbitControls.maxPolarAngle = 0.75 * Math.PI;
+                orbitControls.enableKeys = false;
+
+                /* Ply loading */
+                plyGroup = new THREE.Group();
+                scene.add(plyGroup);
+
+                /* Orientation loading */
+                function cameraHelper(camera) {
+                    // create the group (looking at intrinsics only) that should be added to the camera frame.
+                    var group = new THREE.Group();
+
+                    // place a frustum
+                    {
+                        m = new THREE.Matrix4().getInverse(camera.projectionMatrix);
+                        var geometry = new THREE.BufferGeometry();
+                        var vertices = new Float32Array(15);
+                        // get the 4 corners on the near plane (neglecting distortion)
+                        new THREE.Vector3( -1, -1, -1 ).applyMatrix4(m).toArray(vertices,  3);
+                        new THREE.Vector3( -1,  1, -1 ).applyMatrix4(m).toArray(vertices,  6);
+                        new THREE.Vector3(  1,  1, -1 ).applyMatrix4(m).toArray(vertices,  9);
+                        new THREE.Vector3(  1, -1, -1 ).applyMatrix4(m).toArray(vertices, 12);
+                        var indices = [ 0, 1, 2,  0, 2, 3,  0, 3, 4,  0, 4, 1,  1, 3, 2,  1, 4, 3 ];
+                        geometry.setIndex( indices );
+                        geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+                        geometry.addGroup(0, 12, 0);
+                        geometry.addGroup(12, 6, 1);
+
+                        viewMaterials[camera.name] = new OrientedImageMaterial(viewMaterialOptions);
+                        viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
+                        var mesh = new THREE.Mesh( geometry, [wireMaterial, viewMaterials[camera.name]] );
+                        mesh.scale.set(10, 10, 10);
+                        group.add(mesh);
+                    }
+
+                    // place a sphere at the camera center
+                    {
+                        var geometry = new THREE.SphereBufferGeometry(0.03, 8, 8 );
+                        var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+                        group.add(new THREE.Mesh( geometry, material ));
+                    }
+
+                    return group;
+                };
+
+                // handle functions
+
+                function handlePly(name) {
+                    showHelp(false);
+                    return function(geometry) {
+                        console.log(name);
+                        var points = new THREE.Points( geometry, textureMaterial );
+                        plyGroup.add( points );
+                        geometry.computeBoundingBox();
+                        var center = new THREE.Vector3();
+                        geometry.boundingBox.getCenter(center);
+                        points.updateMatrixWorld(true);
+                    };
+                }
+
+                function handleImage(name) {
+                    showHelp(false);
+                    return function(texture) {
+                        if (!texture) return;
+                        const match = name.match(/([^\/]*)\.[\w\d]/i);
+                        texture.name = match ? match[1] : name;
+                        textures[texture.name] = texture;
+                        const camera = cameras.getObjectByName(texture.name);
+                        setCamera(camera);
+                        return texture;
+                    };
+                }
+
+                function handleOrientation(name) {
+                    showHelp(false);
+                    return function(camera) {
+                        if (!camera) return;
+                        const match = name.match(/Orientation-(.*)\.[\w\d]*\.xml/i);
+                        camera.name = match ? match[1] : name;
+                        if (cameras.children.find(cam => cam.name == camera.name)) {
+                            console.warn(`Camera "${camera.name}" was already loaded, skipping`);
+                            return;
+                        }
+                        var check = '[?]';
+                        if (camera.check) check = camera.check() ? '[Y]' : '[N]';
+                        console.log(check, name);
+                        if (useCustomCameraHelper) {
+                            // use our Camera Helper
+                            camera.add(cameraHelper(camera));
+                        } else {
+                            // use THREE.CameraHelper
+                            camera.near = 0.5;
+                            camera.far = 1;
+                            scene.add(new THREE.CameraHelper(camera));
+                            camera.far = 10000;
+                        }
+                        cameras.add(camera);
+                        cameras.children.sort((a, b) => a.name.localeCompare(b.name));
+                        setCamera(camera);
+                        return camera;
+                    };
+                }
+
+                // parse functions
+                var plyLoader = new THREE.PLYLoader();
+                var parsePly = (source) => (data => plyLoader.parse(data));
+
+                function parseImage(source) {
+                    return (data) => {
+                        return new Promise((resolve, reject) => {
+                            textureLoader.load(data, resolve, undefined, reject)
+                        }).finally(() => source.close(data, 'dataURL'));
+                    }
+                }
+
+                function parseOrientation(source) {
+                    var parsers = [MicmacOrientationParser, MatisOrientationParser];
+                    return (data) => {
+                        for(const parser of parsers) {
+                            var parsed = parser.parse(data, source);
+                            if (parsed) return parsed;
+                        }
+                        return undefined;
+                    }
+                }
+
+                // load functions
+
+                function loadPly(url, source) {
+                    return source.open(url, 'arrayBuffer')
+                    .then(parsePly(source))
+                    .then(handlePly(url));
+                }
+
+                function loadImage(url, source) {
+                    return source.open(url, 'dataURL')
+                    .then(parseImage(source))
+                    .then(handleImage(url));
+                }
+
+                function loadOrientation(name, source) {
+                    return source.open(name, 'text')
+                        .then(parseOrientation(source))
+                        .then(handleOrientation(name));
+                }
+
+                function loadFileImSel(dir, source) {
+                    var url = dir+'FileImSel.xml';
+                    source.open(url, 'text').then((xml) => {
+                        xml = new window.DOMParser().parseFromString(xml, 'text/xml');
+                        var names = Array.from(xml.getElementsByTagName('Name'));
+                        names.forEach(name => loadOrientation(dir+'Orientation-'+name.childNodes[0].nodeValue.trim()+'.xml', source));
+                    });
+                }
+
+                function loadJSON(path, file) {
+                    file = file || 'index.json';
+                    var source = new FetchSource(path);
+                    source.open(file, 'text').then((json) => {
+                        json = JSON.parse(json);
+                        if (json.plane) {
+                            const position = json.plane.position;
+                            if (position && position.z !== undefined) plane.position.z = position.z;
+                            orbitControls.target.set(0, 0, plane.position.z);
+                        }
+                        if (json.target) {
+                            orbitControls.target.copy(json.target);
+                        }
+                        json.ply.forEach(url => todos.push(() => loadPly(url, source)));
+                        json.ori.forEach((orientationUrl, i) => todos.push(() => loadOrientedImage(orientationUrl, json.img[i], source)));
+                    });
+                }
+
+                // file source
+                addFiles = function(files) {
+                    showHelp(false);
+                    var source = new FilesSource(files);
+                    // iterate over files
+                    for(var i = 0; i < files.length; ++i) {
+                        var file = files[i];
+                        var name = file.name;
+                        var ext = name.substr(name.lastIndexOf('.') + 1).toLowerCase();
+                        switch (ext) {
+                            case 'ply': loadPly(name, source); break;
+                            case 'xml': loadOrientation(name, source); break;
+                            case 'jpg': loadImage(name, source); break;
+                            default:
+                        }
+                    }
+                };
+
+                /* Drag and drop events */
+                function prevDefault(event){
+                    showHelp(false);
+                    event.preventDefault();
+                }
+                function addFilesDrag(event) {
+                    prevDefault(event);
+                    addFiles((event.dataTransfer || window.dataTransfer).files);
+                }
+                document.addEventListener('dragenter', prevDefault, false);
+                document.addEventListener('dragover', prevDefault, false);
+                document.addEventListener('dragleave', prevDefault, false);
+                document.addEventListener('drop',  addFilesDrag, false);
+
+
+                function setMaterial(material, camera) {
+                    material.map = textures[camera.name] || uvTexture;
+                    material.uvwPreTransform.copy(camera.preProjectionMatrix).multiply(camera.matrixWorldInverse);
+                    material.uvwPostTransform.copy(camera.postProjectionMatrix);
+                    if (camera.distos && camera.distos.length == 1 && camera.distos[0].type === 'ModRad') {
+                        material.uvDistortion = camera.distos[0];
+                    } else {
+                        material.uvDistortion = { C: new THREE.Vector2(), R: new THREE.Vector4() };
+                        material.uvDistortion.R.w = Infinity;
+                    }
+                }
+
+                /* Keyboard events */
+                function setView(camera) {
+                    if (!camera) return;
+                    console.log('View:', camera.name);
+                    prevCamera.set(viewCamera);
+                    nextCamera.set(camera);
+                    prevCamera.timestamp = 0; // timestamp will be set in the update callback
+                    nextCamera.zoom = viewCamera.zoom; // keep the current zoom
+                    setMaterial(viewMaterials[camera.name], camera);
+                    onWindowResize();
+                    orbitControls.enabled = false;
+                }
+
+                function setTexture(camera) {
+                    if (!camera) return;
+                    console.log('Texture:', camera.name);
+                    textureCamera = camera;
+                    setMaterial(textureMaterial, camera);
+                }
+
+                function setCamera(camera) {
+                    setView(camera);
+                    setTexture(camera);
+                }
+
+                function getCamera(camera, delta = 0) {
+                    const array = cameras.children;
+                    const index = array.findIndex(cam => cam.name == camera.name);
+                    return array[(index + delta + array.length) %  array.length];
+                }
+
+                function loadOrientedImage(orientationUrl, imageUrl, source) {
+                    loadImage(imageUrl, source).then(() => loadOrientation(orientationUrl, source));
+                }
+
+                function keyDown(event) {
+                    switch(event.key) {
+                        case '+': textureMaterial.size++; break;
+                        case '-': textureMaterial.size--; break;
+                        case 'ArrowDown': setView(getCamera(nextCamera, -1));  break;
+                        case 'ArrowUp': setView(getCamera(nextCamera, +1));  break;
+                        case 'ArrowLeft': setTexture(getCamera(textureCamera, -1));  break;
+                        case 'ArrowRight': setTexture(getCamera(textureCamera, +1));  break;
+                        case 'PageDown': setCamera(getCamera(nextCamera, -1));  break;
+                        case 'PageUp': setCamera(getCamera(nextCamera, +1));  break;
+                        case 't': setTexture(getCamera(nextCamera));  break;
+                        case 'v': setView(getCamera(textureCamera));  break;
+                        case 'c': console.log(nextCamera); break;
+                        case 'p': console.log(viewCamera.position); break;
+                        default : console.log(event.key, 'is not supported');
+                    }
+                }
+                document.addEventListener('keydown', keyDown, false);
+
+                /* callbacks */
+                function onWindowResize() {
+                    const width = window.innerWidth;
+                    const height = window.innerHeight;
+                    const aspect = width / height;
+                    renderer.setSize(width, height);
+                    viewCamera.aspect = aspect;
+                    viewCamera.updateProjectionMatrix();
+                    prevCamera.aspect = aspect;
+                    prevCamera.updateProjectionMatrix();
+                    nextCamera.aspect = aspect;
+                    nextCamera.updateProjectionMatrix();
+                }
+
+                /* preset scenes */
+                scenes = {
+                    Clear: function() {
+                        todos.length = 0;
+                        const camera = new PhotogrammetricCamera();
+                        prevCamera.set(camera);
+                        viewCamera.set(camera);
+                        nextCamera.set(camera);
+                        nextCamera.timestamp = undefined;
+                        viewCamera.zoom = 0.8; // zoom out a bit to see the image borders
+                        textureCamera = viewCamera;
+                        gui.updateFromCamera(viewCamera);
+                        textureMaterial.map = null;
+                        Object.keys(textures).forEach(key => textures[key].dispose());
+                        while(cameras.children.length) cameras.remove(cameras.children[0]);
+                        while(plyGroup.children.length) plyGroup.remove(plyGroup.children[0]);
+                        showHelp(true);
+                        plane.position.z = 0;
+                    },
+                    MicMacFilesSamples: function () {
+                        var path = 'https://raw.githubusercontent.com/micmacIGN/Documentation/master/FilesSamples/';
+                        var source = new FetchSource(path);
+                        loadOrientation('Calib-00.xml', source);
+                        loadOrientation('Calib-1.xml', source);
+                        loadOrientation('CalibFrancesco.xml', source);
+                        loadOrientation('NewCalibD3X-mm.xml', source);
+                        loadOrientation('NewCalibD3X-pix.xml', source);
+                        loadOrientation('OriFrancesco.xml', source);
+                        loadOrientation('Orientation-00.xml', source);
+                        loadOrientation('Orientation-1.xml', source);
+                        loadOrientation('Test-NewApero-mm.xml', source);
+                        loadOrientation('Test-NewApero-pix.xml', source);
+                        loadOrientation('TestOri-1.xml', source);
+                        loadOrientation('TestOri-2.xml', source);
+                    },
+                    Abbey: function() {
+                        var path = 'https://raw.githubusercontent.com/micmacIGN/Documentation/master/NEW-DATA/CompensOnLine/';
+                        var source = new FetchSource(path);
+                        loadOrientedImage('Ori-Rel/Orientation-Abbey-IMG_0204.jpg.xml', 'Abbey-IMG_0204.jpg', source);
+                        loadOrientedImage('Ori-Rel/Orientation-Abbey-IMG_0205.jpg.xml', 'Abbey-IMG_0205.jpg', source);
+                        loadOrientedImage('Ori-Rel/Orientation-Abbey-IMG_0206.jpg.xml', 'Abbey-IMG_0206.jpg', source);
+                        loadOrientedImage('Ori-Rel/Orientation-Abbey-IMG_0207.jpg.xml', 'Abbey-IMG_0207.jpg', source);
+                        plane.position.z = -16.56;
+                        orbitControls.target.set(0, 0, plane.position.z);
+                    },
+                    Maurepas: function() {
+                        loadJSON('http://mathieu.bredif.free.fr/cors.php?url=data/maurepas/');
+                        // orbitControls is broken here
+                    },
+                    Ramses: function() {
+                        loadJSON('http://mathieu.bredif.free.fr/cors.php?url=data/ramses/');
+                    },
+                    Cuxa: function() {
+                        loadJSON('http://mathieu.bredif.free.fr/cors.php?url=data/cuxa/');
+                    },
+                    Viabon: function() {
+                        loadJSON('http://mathieu.bredif.free.fr/cors.php?url=data/viabon/');
+                    },
+                    //added new scenes
+                    Pierrerue: function(){
+                        // var path = '../outputs/';
+                        // var file = '../data/pierrerue.ply';
+                        // var source = new FetchSource(path);
+                        // loadOrientedImage('Ori-Aspro/Orientation-pierrerue.JPG.xml', 'pierrerue.JPG', source);
+                        // loadPly(file, source)
+                        // plane.position.z = 102;
+                        // orbitControls.target.set(100, 114, 102);
+                        loadJSON('../outputs/test_pierrerue/', 'pierrerue.json');
+                    },
+                    Murol: function(){
+                        loadJSON('../outputs/test_murol/', 'murol.json');
+                    },
+                    Chambord: function(){
+                        loadJSON('../outputs/test_chambord/', 'chambord.json');
+                    },
+                    ChambordFaceNord: function(){
+                        loadJSON('../outputs/test_chambord_faceNord/', 'chambord.json');
+                    }
+                    /*
+                     TODO
+                    Chambord: function() {
+                        var source = new FetchSource('Chambord/');
+                        loadFileImSel('Ori-MEP_FNE/', source);
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_FNO1/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_FNO2/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_FNO3/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_FSE/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_FSO/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_TDN/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_TDO/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_TE/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_TN/');
+                        loadFileImSel(base + 'Chambord/', 'Ori-MEP_TS/'); // no FileImSel.xml
+                    }
+                    */
+                }
+            }
+
+            // GUI functions
+
+            function showHelp(show) {
+                document.getElementById( 'help' ).style.display = show ? 'block' : 'none';
+            }
+
+            function initGUI() {
+                var gui = new dat.GUI();
+                cameraGUI = gui.addFolder('Camera');
+                function updateViewCameraFromGUI() {
+                    viewCamera.updateProjectionMatrix();
+                };
+                gui.updateFromCamera = function updateFromCamera(camera) {
+                    cameraGUI.offsetX.max(camera.view.fullWidth);
+                    cameraGUI.offsetY.max(camera.view.fullHeight);
+                    cameraGUI.width.max(camera.view.fullWidth);
+                    cameraGUI.height.max(camera.view.fullHeight);
+                };
+                cameraGUI.visible = cameraGUI.add(cameras, 'visible');
+                cameraGUI.opacity = cameraGUI.add(viewMaterialOptions, 'opacity', 0, 1);
+                cameraGUI.near = cameraGUI.add(viewCamera, 'near', 0, 10).listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.far = cameraGUI.add(viewCamera, 'far', 1, 100).listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.zoom = cameraGUI.add(viewCamera, 'zoom', 0, 2).listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.view = cameraGUI.add(viewCamera.view, 'enabled').name('crop').listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.offsetX = cameraGUI.add(viewCamera.view, 'offsetX', 0, viewCamera.view.fullWidth).name('crop x0').listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.offsetY = cameraGUI.add(viewCamera.view, 'offsetY', 0, viewCamera.view.fullHeight).name('crop y0').listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.width = cameraGUI.add(viewCamera.view, 'width', 1, viewCamera.view.fullWidth).name('crop width').listen().onChange(updateViewCameraFromGUI);
+                cameraGUI.height = cameraGUI.add(viewCamera.view, 'height', 1, viewCamera.view.fullHeight).name('crop height').listen().onChange(updateViewCameraFromGUI);
+
+                var scenesGUI = gui.addFolder('Scenes');
+                for(const key in scenes) scenesGUI.add(scenes, key);
+                scenesGUI.closed = false;
+
+                var backgroundGUI = gui.addFolder('Background');
+                backgroundGUI.add(textureMaterial, 'wireframe');
+                backgroundGUI.add(sphere, 'visible').name('sphere visible');
+                backgroundGUI.add(plane, 'visible').name('plane visible');
+                backgroundGUI.add(plane.position, 'z', -100, 100, 0.01).name('plane Z').listen();
+
+                gui.add(textureMaterial, 'borderSharpness', 2, 200);
+                // gui.add(textureMaterial, 'diffuseColorGrey');
+
+                return gui;
+            }
+
+            function render() {
+                renderer.render(scene, viewCamera);
+            }
+
+            var todoTimestamp = 0;
+            function animate(timestamp) {
+                requestAnimationFrame(animate);
+                if (todos.length && timestamp > todoTimestamp) {
+                    todos.shift()();
+                    todoTimestamp = timestamp + 200;
+                }
+                if (prevCamera.timestamp !== undefined) {
+                    if (prevCamera.timestamp == 0) {
+                        prevCamera.timestamp = timestamp;
+                        nextCamera.timestamp = prevCamera.timestamp + 1000 * duration;
+                    }
+                    if (timestamp < nextCamera.timestamp) {
+                      const t = 0.001 * (timestamp - prevCamera.timestamp) / duration;
+                      viewCamera.set(prevCamera).lerp(nextCamera, t);
+                    } else {
+                      viewCamera.set(nextCamera);
+                      prevCamera.timestamp = undefined;
+                      nextCamera.timestamp = undefined;
+                      orbitControls.saveState();
+                      orbitControls.enabled = true;
+                    }
+                    viewCamera.far = 10000;
+                    viewCamera.updateProjectionMatrix();
+                    gui.updateFromCamera(viewCamera);
+                }
+                if (viewMaterials[nextCamera.name])
+                    viewMaterials[nextCamera.name].setValues(viewMaterialOptions);
+                plane.position.x = viewCamera.position.x;
+                plane.position.y = viewCamera.position.y;
+
+                render();
+            }
+
+
+            init();
+            var gui = initGUI();
+            animate();
+        </script>
+    </body>
+</html>

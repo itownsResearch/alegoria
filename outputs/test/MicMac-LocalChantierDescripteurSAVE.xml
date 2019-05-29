@@ -1,0 +1,23 @@
+<Global>
+  <ChantierDescripteur>
+
+      <ExitOnBrkp> true </ExitOnBrkp>
+
+ <!-- SIMULATION DES XIFS --> 
+
+ 
+    <KeyedNamesAssociations>
+              <Calcs>
+                  <Arrite>  1 1 </Arrite>
+                  <Direct>
+                        <PatternTransform> (.*).jpg  </PatternTransform>
+                        <CalcName> 50.0 </CalcName>
+                  </Direct>
+              </Calcs>
+              <Key>   NKS-Assoc-STD-FOC  </Key>
+    </KeyedNamesAssociations>
+
+
+
+  </ChantierDescripteur>
+</Global>

@@ -1,0 +1,1 @@
+set Exif.Image.Model  Ascii  "NOOOOCAM"

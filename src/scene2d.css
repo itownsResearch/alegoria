@@ -1,0 +1,10 @@
+#miniDiv{
+    height: 50%; 
+    width: auto; 
+    max-width: 600px; 
+
+}
+#img{
+    height: 100%; 
+    width: auto; 
+}

@@ -1,0 +1,6 @@
+Exit with code 1 
+Generated from line 325  of file C:\projects\micmac-uct71\src\util\error.cpp 
+PID=15280
+Context=[Elise_Pile_Mess_0::display]
+GMEC:Kind of err User's error
+MM3D-Command=["C:\micmac_win\bin\mm3d.exe" "aspro" "1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.jpg" "gcp_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml" "appuis_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml" ]

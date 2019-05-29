@@ -1,0 +1,6 @@
+Exit with code 1 
+Generated from line 205  of file C:\projects\micmac-uct71\src\util\error.cpp 
+PID=14840
+Context=[cEliseFatalErrorHandler::cEFEH_OnErreur]
+GMEC:mes=CombinatoireOFPA, Size Insuffisant line=4543 file=C:\projects\micmac-uct71\src\photogram\phgr_basic.cpp
+MM3D-Command=["C:/micmac_win/bin/mm3d" "Apero" "C:/micmac_win/include/XML_MicMac/Apero-GCP-Init.xml" "DirectoryChantier=./" "+PatternAllIm=FRAN_0207_3294_L.jpg" "+CalibIn=CalInit" "+AeroOut=Aspro" "+DicoApp=gcp_FRAN_0207_3294_L.xml" "+SaisieIm=appuis_FRAN_0207_3294_L.xml" ]

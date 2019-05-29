@@ -1,0 +1,15 @@
+=================================================================
+"C:\micmac_win\bin\mm3d.exe" "SetExif" "../../data/*.JPG" "Cam=NOOOOCAM" 
+ PID : 13184 ;   [Beginning at ] Tue Apr 30 12:18:29 2019
+ PID : 13184 ;   [Ending correctly at] Tue Apr 30 12:18:29 2019
+=================================================================
+"C:\micmac_win\bin\mm3d.exe" "SetExif" "../../data/*.jpg" "Cam=NOOOOCAM" 
+ PID : 2820 ;   [Beginning at ] Tue Apr 30 12:18:45 2019
+ PID : 2820 ;   [Ending correctly at] Tue Apr 30 12:18:45 2019
+=================================================================
+"C:\micmac_win\bin\mm3d.exe" "SetExif" "*.jpg" "Cam=NOOOOCAM" 
+ PID : 11740 ;   [Beginning at ] Tue Apr 30 12:19:25 2019
+ PID : 11740 ;   [Ending correctly at] Tue Apr 30 12:19:25 2019
+=================================================================
+"C:\micmac_win\bin\mm3d.exe" "SetExif" "FRAN_0207_0648_L.jpg" "Cam=NOOOOCAM" 
+ PID : 16880 ;   [Beginning at ] Tue Apr 30 12:19:58 2019
