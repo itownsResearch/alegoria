@@ -1,10 +1,20 @@
-# Notes outil de recalage semi-automatique et visualisation
+# Notes on the tools of semi-automatic registration of images and the visualisation
 
 
-## Fichiers
-Côté utilisateur, 2 pages html:
-- http://localhost/Mouna_partie_itowns/itowns/examples/globe.html
-- http://localhost/Mouna_partie_itowns/itowns/examples/oriented_images.html
+## Installation
+
+The alegoria Web Tools use iTowns as a submodules so in order to get the sources and the builts:
+
+```
+git clone --recursive https://github.com/itownsResearch/alegoria
+```
+
+You're done!
+Now launch your favorite http-server (you'll need php for the semi-automatic registration tool) and access the demo here
+
+- http://localhost/alegoria/src/oriented_images.html   (visualization of oriented images)
+- http://localhost/alegoria/src/globe.html             (semi-automatic registration tool)
+
 
 
 ## SAISIE
