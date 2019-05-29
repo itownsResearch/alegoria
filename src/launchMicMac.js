@@ -29,7 +29,7 @@ function launchMicMac(event, imgName){
        }
     };
 
-    xmlhttp.open("GET", "../../src/launchMicMac.php" +"?"+ "imagename=" + imgName, true);
+    xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName, true);
     xmlhttp.send();
 
 }

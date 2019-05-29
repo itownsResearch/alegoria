@@ -74,7 +74,7 @@ function createCalib(){
     }
 
     //php script to write the xml file
-    var urlC = "../../src/createCalibrationFile.php";
+    var urlC = "createCalibrationFile.php";
 
     //open a connection to the server
     xhrC.open("POST", urlC, true);
