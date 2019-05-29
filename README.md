@@ -1,5 +1,6 @@
 # Notes on the tools of semi-automatic registration of images and the visualisation
 
+![alt text](https://raw.githubusercontent.com/itownsResearch/docs/master/oldProj2.gif "Alegoria")
 
 ## Installation
 
