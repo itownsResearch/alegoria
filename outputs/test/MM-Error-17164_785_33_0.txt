@@ -1,6 +1,0 @@
-Exit with code 1 
-Generated from line 205  of file C:\projects\micmac-uct71\src\util\error.cpp 
-PID=17164
-Context=[cEliseFatalErrorHandler::cEFEH_OnErreur]
-GMEC:mes=Cannot determine   calibration line=1327 file=C:\projects\micmac-uct71\src\uti_phgrm\Apero\cCalib.cpp
-MM3D-Command=["C:/micmac_win/bin/mm3d" "Apero" "C:/micmac_win/include/XML_MicMac/Apero-GCP-Init.xml" "DirectoryChantier=./" "+PatternAllIm=1919_CAF_Z-36_0008.jpg" "+CalibIn=CalInit" "+AeroOut=Aspro" "+DicoApp=gcp_1919_CAF_Z-36_0008.xml" "+SaisieIm=appuis_1919_CAF_Z-36_0008.xml" ]

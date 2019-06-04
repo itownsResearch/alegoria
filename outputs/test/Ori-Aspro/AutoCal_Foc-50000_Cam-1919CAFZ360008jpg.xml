@@ -2,12 +2,12 @@
 <ExportAPERO>
      <CalibrationInternConique>
           <KnownConv>eConvApero_DistM2C</KnownConv>
-          <PP>300 159.5</PP>
-          <F>833.333333333333371</F>
-          <SzIm>600 319</SzIm>
+          <PP>3387 2540</PP>
+          <F>9408.33333333333394</F>
+          <SzIm>6774 5080</SzIm>
           <CalibDistortion>
                <ModRad>
-                    <CDist>300 159.5</CDist>
+                    <CDist>3387 2539.99999999999955</CDist>
                </ModRad>
           </CalibDistortion>
      </CalibrationInternConique>

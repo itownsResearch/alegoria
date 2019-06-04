@@ -44,8 +44,8 @@ function terminal($command)
 }
 
 //MicMac inputs
-$path_to_output = "C:/EasyPHP-Devserver-17/eds-www/Mouna_partie_itowns/outputs/test";
-$path_to_data = "C:/EasyPHP-Devserver-17/eds-www/Mouna_partie_itowns/data";
+$path_to_output = "C:/EasyPHP-Devserver-17/eds-www/alegoria/outputs/test";
+$path_to_data = "C:/EasyPHP-Devserver-17/eds-www/alegoria/data";
 //$img_name = "FRAN_0207_0628_L.jpg";
 $calib_file = "Ori-CalInit";
 $imagename = preg_replace('/\\.[^.\\s]{3,4}$/', '', $img_name);

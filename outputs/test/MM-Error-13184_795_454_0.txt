@@ -1,4 +1,0 @@
-Exit with code -1 
-Generated from line 1019  of file C:\projects\micmac-uct71\src\util\arg_main.cpp 
-PID=13184
-Context=[System-call :"C:/micmac_win/bin/mm3d" Apero  C:/micmac_win/include/XML_MicMac/Apero-GCP-Init.xml  DirectoryChantier=./ +PatternAllIm=1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.jpg +CalibIn=CalInit +AeroOut=Aspro +DicoApp=gcp_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml +SaisieIm=appuis_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml]

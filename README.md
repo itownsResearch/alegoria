@@ -16,7 +16,12 @@ Now launch your favorite http-server (you'll need php for the semi-automatic reg
 - http://localhost/alegoria/src/oriented_images.html   (visualization of oriented images)
 - http://localhost/alegoria/src/globe.html             (semi-automatic registration tool)
 
-
+### Notes for micmac with globe.html
+- On Linux, beware that in order to create the different files (ground point etc) you will need to specify write authorization. You can set an authorization recursive for the all alegoria directory like chmod -R 777 alegoria/
+- Check the launchMicMac.php to verify that it can find micmac and your images (micmac inputs around line 47). You might add a path to micmac bin like this at the beginning of the function terminal
+    //add MicMac to global Path
+    $path = '/home/myusername/micmac/bin';
+    putenv('PATH=' . getenv('PATH') . PATH_SEPARATOR . $path);
 
 ## SAISIE
 Globe.html est la page qui permet d'effectuer la **saisie**
@@ -35,7 +40,7 @@ Globe.html est la page qui permet d'effectuer la **saisie**
 
 ### Notes:
 Le nom de l'image à recaler est à indiquer dans la balise img, src en haut du fichier
-   ex ->  <img id="img" src="../../data/FRAN_0207_0558_L.jpg" onmousedown="getImgCoordOnClick(event)">
+   ex ->  <img id="img" src="../data/FRAN_0207_0558_L.jpg" onmousedown="getImgCoordOnClick(event)">
 
 La saisie permet de générer les fichiers de points d'appuis appuis_NomImage.xml et points au sol, gcp_NomImage.xml
 

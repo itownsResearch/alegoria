@@ -1,6 +1,0 @@
-Exit with code 1 
-Generated from line 205  of file C:\projects\micmac-uct71\src\util\error.cpp 
-PID=11160
-Context=[cEliseFatalErrorHandler::cEFEH_OnErreur]
-GMEC:mes=Empty list for StdGetListOfFile (one of the input file name is wrong) line=2813 file=C:\projects\micmac-uct71\src\photogram\ChantierNameAssoc.cpp
-MM3D-Command=["C:/micmac_win/bin/mm3d" "Apero" "C:/micmac_win/include/XML_MicMac/Apero-GCP-Init.xml" "DirectoryChantier=./" "+PatternAllIm=1919_défilé_victoire.jpg" "+CalibIn=CalInit" "+AeroOut=Aspro" "+DicoApp=gcp_1919_défilé_victoire.xml" "+SaisieIm=appuis_1919_défilé_victoire.xml" ]

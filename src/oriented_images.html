@@ -34,8 +34,6 @@
        <!-- <script src="../../src/photogrammetic_camera/three-photogrammetric-camera.js"></script>  -->
         <script type="text/javascript">
 
-
-
             // Get possible parameters from url like imagename
             var parameters = location.search.substring(1).split("&");
             var temp = parameters[0].split("=");
@@ -296,7 +294,7 @@
 
                 textureMaterial = new OrientedImageMaterial({
                     map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
-                    opacity:1.,
+                    opacity:.5,
                     transparent:true,
                    // size: 2,
                  //   vertexColors: THREE.VertexColors,
@@ -337,7 +335,8 @@
                 }else{
                     plane = pictureInfos.plane;
                 }
-                
+                plane.visible = false;
+
                 console.log("zdzdzdz", plane);
                 var p2 = plane.clone();
                 p2.position.multiplyScalar(1.0001);

@@ -1,6 +1,0 @@
-Exit with code 1 
-Generated from line 205  of file C:\projects\micmac-uct71\src\util\error.cpp 
-PID=7024
-Context=[cEliseFatalErrorHandler::cEFEH_OnErreur]
-GMEC:mes=Ori name is not a valid existing directory line=4083 file=C:\projects\micmac-uct71\src\photogram\ChantierNameAssoc.cpp
-MM3D-Command=["C:\micmac_win\bin\mm3d.exe" "aspro" "1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.jpg" "Ori-CalInit/AutoCal_Foc-50000.xml" "gcp_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml" "appuis_1325076378-Paris-Metro-Gare-du-Nord-Station-3-DC-133.xml" ]
