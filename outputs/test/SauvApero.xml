@@ -10,7 +10,7 @@
      <SectionBDD_Observation>
           <BDD_ObsAppuisFlottant>
                <Id>Id-Appui</Id>
-               <KeySetOrPat>appuis_1919_CAF_Z-36_0008.xml</KeySetOrPat>
+               <KeySetOrPat>appuis_1919_CAF_C-1_0012.xml</KeySetOrPat>
                <AcceptNoGround>true</AcceptNoGround>
           </BDD_ObsAppuisFlottant>
      </SectionBDD_Observation>
@@ -30,7 +30,7 @@
                </CalibPerPose>
           </CalibrationCameraInc>
           <PoseCameraInc>
-               <PatternName>1919_CAF_Z-36_0008.jpg</PatternName>
+               <PatternName>1919_CAF_C-1_0012.jpg</PatternName>
                <CalcNameCalib>GenerateKC-Others</CalcNameCalib>
                <PosValueInit>
                     <PosFromBDAppuis>
@@ -41,7 +41,7 @@
           </PoseCameraInc>
           <PointFlottantInc>
                <Id>Id-Appui</Id>
-               <KeySetOrPat>gcp_1919_CAF_Z-36_0008.xml</KeySetOrPat>
+               <KeySetOrPat>gcp_1919_CAF_C-1_0012.xml</KeySetOrPat>
           </PointFlottantInc>
      </SectionInconnues>
      <SectionChantier>

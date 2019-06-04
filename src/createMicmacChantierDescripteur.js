@@ -5,7 +5,7 @@ var div, image, image_width, image_height, image_rendwidth, image_rendheight, im
 var xmlDocCalib, element1Calib;
 
 
-function createMicMacChantierDescripteur(){
+function createMicmacChantierDescripteur(){
 
     i = 0;
     //store image parameters
