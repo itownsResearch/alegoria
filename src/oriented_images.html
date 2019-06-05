@@ -78,17 +78,23 @@
             var currentOpacity = 1;
             var currentDistance = 100;
             var arrDisplayedImages = [];
+            var meshesForeverever = [];
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
             arrayImages = [{image: 'planNotreDame.jpg', distance: 200, opacity: 1, plane:null},
                            {image: 'plandetailleCite.jpg', distance: 200, opacity: 1, plane:null},
+                           {image: 'notredame.jpg', distance: 200, opacity: 1, plane:null},
                            {image: '1919_CAF_C-1_0012.jpg', distance: 200, opacity: 1, plane:null}, 
                            {image: '1951_DUR_208_0007.jpg', distance: 200, opacity: 1, plane:null},
                            {image: '1951_DUR_214_0024.jpg', distance: 200, opacity: 1, plane:null}, 
                            {image: '1951_DUR_214_0022.jpg', distance: 200, opacity: 1, plane:null},
-                           {image: '1919_defile_victoire.jpg', distance: 200, opacity: 1, plane:null},
-                           {image: '1919_CAF_Z-36_0008.jpg', distance: 200, opacity: 1, plane:null}];
+                           {image: '1919_CAF_Z-36_0008.jpg', distance: 200, opacity: 1, plane:null},
+                           {image: 'trocadero2.jpg', distance: 200, opacity: 1, plane:null},
+                           {image: 'FRAN_0207_3299_L.jpg', distance: 200, opacity: 1, plane:null},
+                           {image: 'FRAN_0207_0648_L.jpg', distance: 200, opacity: 1, plane:null}];
+                           
+                           
                            
 
             if(imName !== 'undefined')
@@ -165,7 +171,6 @@
                 ipr: 'IGN',
                 format: 'application/json',
                 zoom: { min: 15, max: 15 },
-              
             });
 
             var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
@@ -178,6 +183,7 @@
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
+                    meshesForeverever.push(mesh);
                     //mesh.material = textureMaterial;
                 },
                 filter: acceptFeature,
@@ -292,7 +298,7 @@
 
             // function to handle micmac orientation file
             function handleOrientation(cam) {
-
+                
                 view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
                 console.log(cam);
                 console.log(returnExistingCamImage(cam));
@@ -372,7 +378,7 @@
 
                 // set GUI for oriented image
                 if(!orientedMenu){
-                     orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 50, 4000);  
+                     orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 50, 6000);  
                      orientedMenu = true; 
                     // console.log(menuGlobe.gui.__folders["Oriented Image"].__controllers[0]);
                 }else{
@@ -430,12 +436,9 @@
             }
 
             function projectOnBuildings(){
-                console.log("projeccc", meshes);
-                for(var i = 0; i< meshes.length; ++i){
-                    console.log(m);
-                    meshes[i].material = textureMaterial;
-                }
-                    
+                //console.log("projeccc", meshesForeverever);
+                for(var m in meshesForeverever)
+                    meshesForeverever[m].material = textureMaterial;      
             }
 
             
@@ -452,7 +455,7 @@
 
       
             function nextImage(){
-                
+               // meshesForeverever = [];
                 currentIndiceNav = (currentIndiceNav + 1) % arrayImages.length; console.log("currentIndiceNav ",currentIndiceNav);
                 console.log('indice image: ', currentIndiceNav);
 
