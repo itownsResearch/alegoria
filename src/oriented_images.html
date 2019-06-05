@@ -429,14 +429,26 @@
                 view.notifyChange(view.camera.camera3D);
             }
 
+            function projectOnBuildings(){
+                console.log("projeccc", meshes);
+                for(var i = 0; i< meshes.length; ++i){
+                    console.log(m);
+                    meshes[i].material = textureMaterial;
+                }
+                    
+            }
+
             
             // eslint-disable-next-line no-unused-vars
             function menuNavigUI(menu, pictureInfos) {
                 var navImageGUI = menu.gui.addFolder('Navigation Image');
-                var obj = { next:function(){ nextImage() }};
+                var obj  = { next:function(){ nextImage() }};
+                var obj2 = { projectOnBuildings:function(){projectOnBuildings()}};
                 navImageGUI.add(obj,'next');
+                navImageGUI.add(obj2,'projectOnBuildings');
                 view.notifyChange(view.camera.camera3D);
             }
+
 
       
             function nextImage(){
