@@ -53,7 +53,8 @@ $gcp_file = 'gcp_'. $imagename . '.xml';
 $appuis_file = 'appuis_'. $imagename . '.xml';
 
 //copy image from data directory to outputs directory for micmac reasons...
-copy($path_to_data."\\".$img_name,$path_to_output."\\".$img_name);
+//copy($path_to_data."\\".$img_name,$path_to_output."\\".$img_name);
+copy($path_to_data.DIRECTORY_SEPARATOR.$img_name,$path_to_output.DIRECTORY_SEPARATOR.$img_name);
 
 //change current directory to outputs directory
 chdir($path_to_output);

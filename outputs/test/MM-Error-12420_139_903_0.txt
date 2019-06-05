@@ -1,0 +1,4 @@
+Exit with code -1 
+Generated from line 1019  of file C:\projects\micmac-uct71\src\util\arg_main.cpp 
+PID=12420
+Context=[System-call :"C:/micmac_win/bin/mm3d" Apero  C:/micmac_win/include/XML_MicMac/Apero-GCP-Init.xml  DirectoryChantier=./ +PatternAllIm=1919_CAF_C-1_0012.jpg +CalibIn=CalInit +AeroOut=Aspro +DicoApp=gcp_1919_CAF_C-1_0012.xml +SaisieIm=appuis_1919_CAF_C-1_0012.xml]

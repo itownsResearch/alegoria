@@ -1,4 +1,3 @@
-
 <html>
     <head>
         <title>Itowns - Oriented image</title>
@@ -16,7 +15,6 @@
                 border-radius: 5px;
                 font-family: Arial, Helvetica, sans-serif;
                 font-size: 11px;
-                
             }
         </style>
         <meta charset="UTF-8">
@@ -83,7 +81,9 @@
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
-            arrayImages = [{image: '1919_CAF_C-1_0012.jpg', distance: 200, opacity: 1, plane:null}, 
+            arrayImages = [{image: 'planNotreDame.jpg', distance: 200, opacity: 1, plane:null},
+                           {image: 'plandetailleCite.jpg', distance: 200, opacity: 1, plane:null},
+                           {image: '1919_CAF_C-1_0012.jpg', distance: 200, opacity: 1, plane:null}, 
                            {image: '1951_DUR_208_0007.jpg', distance: 200, opacity: 1, plane:null},
                            {image: '1951_DUR_214_0024.jpg', distance: 200, opacity: 1, plane:null}, 
                            {image: '1951_DUR_214_0022.jpg', distance: 200, opacity: 1, plane:null},
@@ -94,7 +94,7 @@
             if(imName !== 'undefined')
                 arrayImages.unshift(  {image: imName, distance: 100, opacity: 1, plane:null} );
             
-                  // Add one imagery layer to the scene
+            // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
             itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/Ortho.json').then(function _(config) {
@@ -279,39 +279,54 @@
 
             const uvTexture = new itowns.THREE.TextureLoader().load('../data/uv.jpg');
 
+            function returnExistingCamImage(cam){
+
+                for (var i = 0; i< arrDisplayedImages.length; ++i){
+                    if(Math.abs(cam.position.x - arrDisplayedImages[i].position.x < 0.1))
+                        return arrDisplayedImages[i];
+                }
+                return null;
+            }
+
+            
+
             // function to handle micmac orientation file
             function handleOrientation(cam) {
 
+                view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
+                console.log(cam);
+                console.log(returnExistingCamImage(cam));
+                
+                arrDisplayedImages.push(cam);
                 textureMaterial = new OrientedImageMaterial({
                     map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
                     opacity:currentOpacity,
                     transparent:true,
-                   // size: 2,
-                 //   vertexColors: THREE.VertexColors,
-                 //  sizeAttenuation: false,
-                    //blending: THREE.NormalBlending,
+                    // size: 2,
+                    //   vertexColors: THREE.VertexColors,
+                    //  sizeAttenuation: false,
+                        //blending: THREE.NormalBlending,
                 });
-
              
                 setMaterial(textureMaterial, cam);
-                console.log("textureMaterial: ",textureMaterial);
-                
-            //    sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-3, 32, 32), textureMaterial);
-            //    sphere.position.copy(cam.position);
-            //    sphere.updateMatrixWorld();
-            //    cam.add(sphere);
+               // console.log("textureMaterial: ",textureMaterial);
+                    
+                //    sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-3, 32, 32), textureMaterial);
+                //    sphere.position.copy(cam.position);
+                //    sphere.updateMatrixWorld();
+                //    cam.add(sphere);
 
-            //    plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(20000000, 20000000), textureMaterial);
-            //    view.scene.add(plane);
+                //    plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(20000000, 20000000), textureMaterial);
+                //    view.scene.add(plane);
 
-             //   cam.updateMatrixWorld();
-             //   view.scene.add(sphere);//cam);
-/*
-                var c = cameraHelper(cam, textureMaterial);
-                c.position.copy(cam.position);
-                c.updateMatrixWorld();
-                view.scene.add(c);
-*/
+                //   cam.updateMatrixWorld();
+                //   view.scene.add(sphere);//cam);
+                /*
+                                var c = cameraHelper(cam, textureMaterial);
+                                c.position.copy(cam.position);
+                                c.updateMatrixWorld();
+                                view.scene.add(c);
+                */
 
                 camHelper = cameraHelper(cam, textureMaterial);
                 var scale = currentDistance / 100;
@@ -319,7 +334,7 @@
                 cam.add(camHelper);
                 cam.updateMatrixWorld();
                 view.scene.add(cam);  
-                console.log(cam);
+               // console.log(cam);
                 var pictureInfos = arrayImages[currentIndiceNav];
                 // camera set from micmac orientation file
                 camera = cam;
@@ -331,14 +346,14 @@
                 }
                 plane.visible = false;
 
-                console.log("zdzdzdz", plane);
+                //console.log("zdzdzdz", plane);
                 var p2 = plane.clone();
                 p2.position.multiplyScalar(1.0001);
                 p2.updateMatrixWorld();
                 view.scene.add(p2);
 
                 textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
-
+                textureMaterial.transparent = true;
                 updateCamera();
 
                 /*
@@ -351,13 +366,13 @@
                 // open view camera FOV of 10° to see landscape around the picture.
                 //   view.camera.camera3D.fov += 10;
                 view.camera.camera3D.updateProjectionMatrix();
-                console.log(view.camera.camera3D);
+               // console.log(view.camera.camera3D);
 
                 //        view.camera.camera3D = cam;
 
                 // set GUI for oriented image
                 if(!orientedMenu){
-                     orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, view, 50, 4000);  
+                     orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 50, 4000);  
                      orientedMenu = true; 
                     // console.log(menuGlobe.gui.__folders["Oriented Image"].__controllers[0]);
                 }else{
@@ -369,6 +384,8 @@
                // console.log(camera);
             }
             
+
+
             // fetch orientation file
             var source = new FetchSource('../outputs/test/');
             // parse micmac orientation
@@ -390,9 +407,19 @@
             function updatePlaneOpacity(value) {
             //    console.log(value, plane);
                 currentOpacity = value;
+                textureMaterial.transparent = true;
                 plane.material.opacity = value;
                 textureMaterial.opacity = value;
                 view.notifyChange(view.camera.camera3D);
+            }
+
+            function updateZoom(value) {
+                
+                view.camera.camera3D.zoom = value; 
+                view.camera.camera3D.updateProjectionMatrix();
+                view.notifyChange(view.camera.camera3D);
+
+                console.log(view.camera);
             }
 
             // update camera and view

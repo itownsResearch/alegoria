@@ -1,0 +1,6 @@
+Exit with code 1 
+Generated from line 205  of file C:\projects\micmac-uct71\src\util\error.cpp 
+PID=16136
+Context=[cEliseFatalErrorHandler::cEFEH_OnErreur]
+GMEC:mes=Bloc Diag0 cElMatCreuseBlocSym::PrepPreCond Chainage line=999 file=C:\projects\micmac-uct71\src\optim\opt_mat_creuse.cpp
+MM3D-Command=["C:/micmac_win/bin/mm3d" "Apero" "C:/micmac_win/include/XML_MicMac/Apero-GCP-Init.xml" "DirectoryChantier=./" "+PatternAllIm=1919_CAF_C-1_0012.jpg" "+CalibIn=CalInit" "+AeroOut=Aspro" "+DicoApp=gcp_1919_CAF_C-1_0012.xml" "+SaisieIm=appuis_1919_CAF_C-1_0012.xml" ]
