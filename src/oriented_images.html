@@ -480,6 +480,17 @@
 
             updateView();
 
+
+            for (var layer of view.getLayers()) {
+               
+                if (layer.id === 'WFS Building') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+                    });
+                }
+            }
+
         </script>
     </body>
 </html>
