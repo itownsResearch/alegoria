@@ -14,6 +14,9 @@
                 background-color: rgba(255, 255, 255, 0.493);
                 border: 2px solid black;
                 border-radius: 5px;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 11px;
+                
             }
         </style>
         <meta charset="UTF-8">
@@ -24,8 +27,9 @@
     <body>
         <div id="viewerDiv">
             <p id="info">
-                Add picture licence here
-                <a href="add reference to the picture" target="_blank"> link </a>
+                <img id="img" src="../data/logoAlegoria.jpg" onmousedown="getImgCoordOnClick(event)">
+                <br> 
+                <a href="http://www.archives-nationales.culture.gouv.fr/" target="_blank"> Images: Archives Nationales </a>
             </p>
         </div>
         <script src="../itowns-photogrammetric-camera/examples/js/GUI/GuiTools.js"></script>
@@ -64,7 +68,7 @@
 
             var pictureInfos;
             var camera;
-            var cameraHelper;
+            var camHelper;
             var plane;
             var orientedImage;
             var orientedImageGUI;
@@ -73,6 +77,9 @@
             var meshes = [];
             var scaler;
             var textureMaterial;
+            var currentOpacity = 1;
+            var currentDistance = 100;
+            var arrDisplayedImages = [];
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
@@ -171,7 +178,7 @@
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
-                    mesh.material = textureMaterial;
+                    //mesh.material = textureMaterial;
                 },
                 filter: acceptFeature,
                 overrideAltitudeInToZero: true,
@@ -216,13 +223,10 @@
             var navMenu = menuNavigUI(menuGlobe, arrayImages);
 
 
-
-
-
             
                 /* Orientation loading */
                 function cameraHelper(camera, mat) {
-                    var wireMaterial = new THREE.MeshBasicMaterial( {color: 0x00ffff, wireframe: true} );
+                    var wireMaterial = new THREE.MeshBasicMaterial( {color: Math.random() * 0XFFFFFF, wireframe: true} );
                     // create the group (looking at intrinsics only) that should be added to the camera frame.
                     var group = new THREE.Group();
                     // place a frustum
@@ -249,27 +253,13 @@
                     }
                     // place a sphere at the camera center
                     {
-                        var geometry = new THREE.SphereBufferGeometry(0.03, 8, 8 );
+                        var geometry = new THREE.SphereBufferGeometry(2, 8, 8 );
                         var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
                         group.add(new THREE.Mesh( geometry, material ));
                     }
                     return group;
                 };
 
-
-                /*
-            function setMaterial(material, camera) {
-                    material.map =  uvTexture;
-                    material.uvwPreTransform.copy(camera.preProjectionMatrix).multiply(camera.matrixWorldInverse);
-                    material.uvwPostTransform.copy(camera.postProjectionMatrix);
-                    if (camera.distos && camera.distos.length == 1 && camera.distos[0].type === 'ModRad') {
-                        material.uvDistortion = camera.distos[0];
-                    } else {
-                        material.uvDistortion = { C: new THREE.Vector2(), R: new THREE.Vector4() };
-                        material.uvDistortion.R.w = Infinity;
-                    }
-                }
-                */
 
                 function setMaterial(material, camera) {
                     material.map =  uvTexture; //textures[camera.name] || uvTexture;
@@ -294,7 +284,7 @@
 
                 textureMaterial = new OrientedImageMaterial({
                     map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
-                    opacity:.5,
+                    opacity:currentOpacity,
                     transparent:true,
                    // size: 2,
                  //   vertexColors: THREE.VertexColors,
@@ -304,15 +294,15 @@
 
              
                 setMaterial(textureMaterial, cam);
-                console.log(textureMaterial);
+                console.log("textureMaterial: ",textureMaterial);
                 
-                sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-3, 32, 32), textureMaterial);
+            //    sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-3, 32, 32), textureMaterial);
             //    sphere.position.copy(cam.position);
             //    sphere.updateMatrixWorld();
-                cam.add(sphere);
+            //    cam.add(sphere);
 
-                plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(20000000, 20000000), textureMaterial);
-                view.scene.add(plane);
+            //    plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(20000000, 20000000), textureMaterial);
+            //    view.scene.add(plane);
 
              //   cam.updateMatrixWorld();
              //   view.scene.add(sphere);//cam);
@@ -322,7 +312,11 @@
                 c.updateMatrixWorld();
                 view.scene.add(c);
 */
-                cam.add(cameraHelper(cam, textureMaterial));
+
+                camHelper = cameraHelper(cam, textureMaterial);
+                var scale = currentDistance / 100;
+                camHelper.scale.set(scale,scale,scale);
+                cam.add(camHelper);
                 cam.updateMatrixWorld();
                 view.scene.add(cam);  
                 console.log(cam);
@@ -359,7 +353,7 @@
                 view.camera.camera3D.updateProjectionMatrix();
                 console.log(view.camera.camera3D);
 
-        //        view.camera.camera3D = cam;
+                //        view.camera.camera3D = cam;
 
                 // set GUI for oriented image
                 if(!orientedMenu){
@@ -385,11 +379,17 @@
 
             function updatePlaneDistance(value) {
                 transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
+                currentDistance = value;
+                var scale = value / 100;
+                camHelper.scale.set(scale,scale,scale);
+                camHelper.updateMatrixWorld();
                 view.notifyChange(view.camera.camera3D);
+                //console.log(menuGlobe);
             }
            
             function updatePlaneOpacity(value) {
-                console.log(value, plane);
+            //    console.log(value, plane);
+                currentOpacity = value;
                 plane.material.opacity = value;
                 textureMaterial.opacity = value;
                 view.notifyChange(view.camera.camera3D);
