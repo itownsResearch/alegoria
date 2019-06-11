@@ -5,6 +5,9 @@ $img_name = $_GET['imagename'];
 function terminal($command)
 {
     //system
+    //add MicMac to global Path
+    $path = '/var/www/micmac/bin';
+    putenv('PATH=' . getenv('PATH') . PATH_SEPARATOR . $path);
     if(function_exists('system'))
     {
         ob_start();
@@ -44,8 +47,8 @@ function terminal($command)
 }
 
 //MicMac inputs
-$path_to_output = "C:/EasyPHP-Devserver-17/eds-www/alegoria/outputs/test";
-$path_to_data = "C:/EasyPHP-Devserver-17/eds-www/alegoria/data";
+$path_to_output = "../outputs/test";
+$path_to_data = "../data";
 //$img_name = "FRAN_0207_0628_L.jpg";
 $calib_file = "Ori-CalInit";
 $imagename = preg_replace('/\\.[^.\\s]{3,4}$/', '', $img_name);

@@ -10,7 +10,7 @@
      <SectionBDD_Observation>
           <BDD_ObsAppuisFlottant>
                <Id>Id-Appui</Id>
-               <KeySetOrPat>appuis_viewFromArc.xml</KeySetOrPat>
+               <KeySetOrPat>appuis_pariseiffel.xml</KeySetOrPat>
                <AcceptNoGround>true</AcceptNoGround>
           </BDD_ObsAppuisFlottant>
      </SectionBDD_Observation>
@@ -30,7 +30,7 @@
                </CalibPerPose>
           </CalibrationCameraInc>
           <PoseCameraInc>
-               <PatternName>viewFromArc.jpg</PatternName>
+               <PatternName>pariseiffel.jpg</PatternName>
                <CalcNameCalib>GenerateKC-Others</CalcNameCalib>
                <PosValueInit>
                     <PosFromBDAppuis>
@@ -41,7 +41,7 @@
           </PoseCameraInc>
           <PointFlottantInc>
                <Id>Id-Appui</Id>
-               <KeySetOrPat>gcp_viewFromArc.xml</KeySetOrPat>
+               <KeySetOrPat>gcp_pariseiffel.xml</KeySetOrPat>
           </PointFlottantInc>
      </SectionInconnues>
      <SectionChantier>
