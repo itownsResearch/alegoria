@@ -12,6 +12,19 @@
                 bottom: 0;
                 color: white;
             }
+            .styleForm {
+                text-align: center;
+                display: block;
+                margin-top: 00px;
+                margin-right: 10px;
+                position: absolute;
+                color: black;
+                font-family: 'Open Sans',
+                sans-serif;
+                font-size: 16px;
+                right: 0;
+                top: 0;
+            }
         </style>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../itowns-photogrammetric-camera/examples/css/example.css">
@@ -23,6 +36,8 @@
         
     </head>
     <body>
+           
+
         <div id="viewerDiv">
             <span class="divScaleWidget"> Scale </span>
             <div id="miniDiv">
@@ -30,6 +45,14 @@
                 <button style="height:10px;width:20px" type="button" onclick="launchMicMac(event, document.getElementById('img').src.split('/').pop())"></button>
             </div>
         </div>
+
+        <form class="styleForm" method="post" enctype="multipart/form-data">
+            <input type="file" name="files[]" multiple>
+            <input type="submit" value="Upload File" name="submit">
+        </form>
+    
+        <script src="upload.js"></script>
+
         <script src="../itowns-photogrammetric-camera/examples/js/GUI/GuiTools.js"></script>
         <script src="../itowns-photogrammetric-camera/dist/itowns.js"></script>
         <script src="../itowns-photogrammetric-camera/examples/js/loading_screen.js"></script>
