@@ -11,17 +11,23 @@ var s1 = xmlXtra.createElement('NameIm');
 s1.textContent = image.src.replace(/^.*[\\\/]/, '');
 xmlXtra.documentElement.appendChild(s1);
 */
-var xmlDoc2 = document.implementation.createDocument(null, 'Global', null);
-//DicoAppuisFlottant
+var xmlDoc2;
+var dico;
 
-//var image = document.getElementById("img");
-var s1 = xmlDoc2.createElement('NameIm');
-s1.textContent = image.src.replace(/^.*[\\\/]/, '');
-xmlDoc2.documentElement.appendChild(s1);
-//element1.appendChild(s1);
+function initXML3D(){
 
-var dico = xmlDoc2.createElement('DicoAppuisFlottant');
-xmlDoc2.documentElement.appendChild(dico);
+    xmlDoc2 = document.implementation.createDocument(null, 'Global', null);
+    //DicoAppuisFlottant
+
+    var image2 = document.getElementById("img");
+    var s1 = xmlDoc2.createElement('NameIm');
+    s1.textContent = image2.src.replace(/^.*[\\\/]/, '');
+    xmlDoc2.documentElement.appendChild(s1);
+    //element1.appendChild(s1);
+
+    dico = xmlDoc2.createElement('DicoAppuisFlottant');
+    xmlDoc2.documentElement.appendChild(dico);
+}
 
 //Function to export 3D coordinates
 function export3Dcoord(ptname,x,y,z) {

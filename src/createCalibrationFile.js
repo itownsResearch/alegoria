@@ -6,33 +6,26 @@
  */
 
 //global variables
-var i;
-var div, image, image_width, image_height, image_rendwidth, image_rendheight, image_offsetLeft, image_offsetTop;
-var xmlDocCalib, element1Calib;
+
 
 
 function createCalib(){
+    var i;
+    var xmlDocCalib, element1Calib;
 
     i = 0;
-    //store image parameters
-    image = document.getElementById("img");
-    div = document.getElementById("miniDiv");
-    image_width = image.naturalWidth; //image real width
-    image_height = image.naturalHeight; //image real height
-    image_rendwidth = image.offsetWidth; //div width
-    image_rendheight =  image.offsetHeight; //div height
-    image_offsetLeft = div.offsetLeft; 
-    image_offsetTop = div.offsetTop;
-
+    //store imageXX parameters
+    var imageXX = document.getElementById("img");
+    var imageXX_width = imageXX.naturalWidth; //imageXX real width
+    var imageXX_height = imageXX.naturalHeight; //imageXX real height
 
     //initializing the xml document(appuis.xml)
     xmlDocCalib = document.implementation.createDocument(null, 'ExportAPERO', null);
     element1Calib = xmlDocCalib.createElement('CalibrationInternConique');
 
 
-
     subElementName = xmlDocCalib.createElement('NameIn');
-    subElementName.textContent = s1.textContent = image.src.replace(/^.*[\\\/]/, '');
+    subElementName.textContent = imageXX.src.replace(/^.*[\\\/]/, '');
     xmlDocCalib.documentElement.appendChild(subElementName);
 
     subElement1 = xmlDocCalib.createElement('KnownConv');
@@ -42,15 +35,15 @@ function createCalib(){
 
 
     var subElement2 = xmlDocCalib.createElement('PP');
-    subElement2.textContent = image_width/2 + ' '+ image_height/2;
+    subElement2.textContent = imageXX_width/2 + ' '+ imageXX_height/2;
     element1Calib.appendChild(subElement2);
 
     var subElement3 = xmlDocCalib.createElement('F');
-    subElement3.textContent = Math.max(image_width, image_height) * 50 / 36;
+    subElement3.textContent = Math.max(imageXX_width, imageXX_height) * 50 / 36;
     element1Calib.appendChild(subElement3);
 
     var subElement4 = xmlDocCalib.createElement('SzIm');
-    subElement4.textContent = image_width + ' '+ image_height;
+    subElement4.textContent = imageXX_width + ' '+ imageXX_height;
     element1Calib.appendChild(subElement4);
 
     var subElement5 = xmlDocCalib.createElement('CalibDistortion');
@@ -59,7 +52,7 @@ function createCalib(){
     var subsubElement5 = xmlDocCalib.createElement('ModRad');
     subElement5.appendChild(subsubElement5);
     var subsubsubElement5 = xmlDocCalib.createElement('CDist');
-    subsubsubElement5.textContent = image_width/2 + ' '+ image_height/2;
+    subsubsubElement5.textContent = imageXX_width/2 + ' '+ imageXX_height/2;
     subsubElement5.appendChild(subsubsubElement5);
 
 
@@ -85,8 +78,6 @@ function createCalib(){
     //send the request
     xhrC.send(xmlDocCalib);
 
-
-    
 
 }
 

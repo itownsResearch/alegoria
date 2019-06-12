@@ -5,35 +5,41 @@
  * send the file via an xmlhttp request to fetch2Dcoord.php
  */
 
+
 //global variables
 var i;
 var div, image, image_width, image_height, image_rendwidth, image_rendheight, image_offsetLeft, image_offsetTop;
 var xmlDoc, element1;
 
-i = 0;
-//store image parameters
-image = document.getElementById("img");
-div = document.getElementById("miniDiv");
-image_width = image.naturalWidth; //image real width
-image_height = image.naturalHeight; //image real height
-image_rendwidth = image.offsetWidth; //div width
-image_rendheight =  image.offsetHeight; //div height
-image_offsetLeft = div.offsetLeft; 
-image_offsetTop = div.offsetTop;
-//initializing the xml document(appuis.xml)
-xmlDoc = document.implementation.createDocument(null, 'SetOfMesureAppuisFlottants', null);
-element1 = xmlDoc.createElement('MesureAppuiFlottant1Im');
-subElement1 = xmlDoc.createElement('NameIm');
-subElement1.textContent = image.src.replace(/^.*[\\\/]/, '');
-xmlDoc.documentElement.appendChild(element1);
-element1.appendChild(subElement1);
 
-var miniDiv = document.getElementById('miniDiv');
-var img = document.getElementById('img');
+function initXML2D(){
+    i = 0;
+    //store image parameters
+    image = document.getElementById("img");
+    div = document.getElementById("miniDiv");
+    image_width = image.naturalWidth; //image real width
+    image_height = image.naturalHeight; //image real height
+    image_rendwidth = image.offsetWidth; //div width
+    image_rendheight =  image.offsetHeight; //div height
+    image_offsetLeft = div.offsetLeft; 
+    image_offsetTop = div.offsetTop;
+    //initializing the xml document(appuis.xml)
+    xmlDoc = document.implementation.createDocument(null, 'SetOfMesureAppuisFlottants', null);
+    element1 = xmlDoc.createElement('MesureAppuiFlottant1Im');
+    subElement1 = xmlDoc.createElement('NameIm');
+    subElement1.textContent = image.src.replace(/^.*[\\\/]/, '');
+    xmlDoc.documentElement.appendChild(element1);
+    element1.appendChild(subElement1);
 
-console.log(miniDiv);
+    var miniDiv = document.getElementById('miniDiv');
+    var img = document.getElementById('img');
+
+    console.log(miniDiv);
+}
 
 function getImgCoordOnClick(event){
+
+    
     image_rendwidth = image.offsetWidth; //div width
     image_rendheight =  image.offsetHeight; //div height
     image_offsetLeft = div.offsetLeft; 
