@@ -300,18 +300,14 @@
             function handleOrientation(cam) {
                 
                 view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
-                console.log(cam);
-                console.log(returnExistingCamImage(cam));
-                
+                //console.log(cam);
+                //console.log(returnExistingCamImage(cam));
                 arrDisplayedImages.push(cam);
+
                 textureMaterial = new OrientedImageMaterial({
                     map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
                     opacity:currentOpacity,
                     transparent:true,
-                    // size: 2,
-                    //   vertexColors: THREE.VertexColors,
-                    //  sizeAttenuation: false,
-                        //blending: THREE.NormalBlending,
                 });
              
                 setMaterial(textureMaterial, cam);
@@ -447,8 +443,10 @@
                 var navImageGUI = menu.gui.addFolder('Navigation Image');
                 var obj  = { next:function(){ nextImage() }};
                 var obj2 = { projectOnBuildings:function(){projectOnBuildings()}};
+                var obj3  = { resetPosition:function(){ resetPosition() }};
                 navImageGUI.add(obj,'next');
                 navImageGUI.add(obj2,'projectOnBuildings');
+                navImageGUI.add(obj3,'resetPosition');
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -463,6 +461,12 @@
                 .then(data => MicmacOrientationParser.parse(data, source))
                 .then(handleOrientation);
                 //view.notifyChange();
+            }
+            
+            // Put scene camera back to original position (center of photocamera)
+            function resetPosition(){
+
+                updateCamera();
             }
 
 
