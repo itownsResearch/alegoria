@@ -12,6 +12,19 @@
                 bottom: 0;
                 color: white;
             }
+            #info {
+                color: black;
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                margin-right: 15px;
+                padding: 0.3rem;
+                background-color: rgba(255, 255, 255, 0.493);
+                border: 2px solid black;
+                border-radius: 5px;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 11px;
+            }
             .styleForm {
                 text-align: center;
                 display: block;
@@ -21,20 +34,33 @@
                 color: black;
                 font-family: 'Open Sans',
                 sans-serif;
-                font-size: 16px;
+                font-size: 12px;
                 left: 0;
-                bottom: 0;
+                bottom: 10;
             }
-            .button {
+            .buttonX {
                 background-color: #4CAF50; /* Green */
                 border: none;
                 color: white;
-                padding: 1px 22px;
-                text-align: center;
+                padding: 4px 4px;
+                text-align: center; 
                 text-decoration: none;
                 display: inline-block;
                 font-size: 12px;
+                bottom: 0;
             }
+            p { background-color:#FFFFFF; 
+                color: black;
+            }
+
+            .imageholder{
+                position: relative;
+                float: right;
+                vertical-align: middle;
+                bottom: 10;
+                left: 4;
+            }
+            
         </style>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../itowns-photogrammetric-camera/examples/css/example.css">
@@ -49,16 +75,22 @@
            
 
         <div id="viewerDiv">
-            <span class="divScaleWidget"> Scale </span>
+                <p id="info">
+                        <img id="imgLogo" src="../data/logoAlegoria.jpg" onmousedown="getImgCoordOnClick(event)">
+                        <br> 
+                        <a href="http://www.archives-nationales.culture.gouv.fr/" target="_blank"> Images: Archives Nationales </a>
+                </p>
+            <!-- span class="divScaleWidget"> Scale </span>  -->
             <div id="miniDiv">
                 <img id="img"  onmousedown="getImgCoordOnClick(event)">
-                <button class="button" type="button" onclick="launchMicMac(event, document.getElementById('img').src.split('/').pop())">Go</button>
             </div>
         </div>
 
         <form class="styleForm" method="post" enctype="multipart/form-data">
             <input type="file" name="files[]" multiple>
             <input type="submit" value="Upload File" name="submit">
+            <p  class="imageholder" id="countPoints"> Points registered: 0</p>
+            <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
         </form>
 
         <script src="../itowns-photogrammetric-camera/examples/js/GUI/GuiTools.js"></script>
@@ -69,11 +101,64 @@
         <script src="scene3dv2.js"></script>
         <script src="createCalibrationFile.js"></script>
         <script src="createMicmacChantierDescripteur.js"></script>
-        <script src="launchMicMac.js"></script>
        
         <script type="text/javascript">
-            // # Simple Globe viewer
 
+            // THREE photogrammetric camera variables
+            var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
+            var MicmacOrientationParser = itowns.MicmacOrientationParser;
+            var FetchSource = itowns.FetchSource;
+            var OrientedImageMaterial = itowns.OrientedImageMaterial;
+            var THREE = itowns.THREE;
+
+            // Get possible parameters from url like imagename
+            var parameters = location.search.substring(1).split("&");
+            var temp = parameters[0].split("=");
+            var imName = unescape(temp[1]);
+            //console.log(imName);
+            
+            var pictureInfos;
+            var camera;
+            var camHelper;
+            var plane;
+            var orientedImage;
+            var orientedImageGUI;
+            var orientedMenu = false;
+            var currentIndiceNav = 0;
+            var currentImageName = "";
+            var globalCurrentCamOriented;
+            var currentOrientationWorkedImage = "x";
+            var currentCameraScene;
+            var meshes = [];
+            var scaler;
+            var textureMaterial;
+            var currentOpacity = 1;
+            var currentDistance = 100;
+            var arrDisplayedImages = [];
+            var meshesForeverever = [];
+            var previewOn = false;
+            var nearProj = 10;
+            var farProj = 500;
+            var target;
+
+            // Alex modifications to handle multiple images
+            var arrayImages = [];
+            arrayImages = [{image: 'paris-expo-uni-1900-vue-aerienne-02.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'planNotreDame.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'plandetailleCite.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'notredame.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'pontlouisphilippe.jpg', distance: 200, opacity: 1, plane:null},
+            {image: '1919_CAF_C-1_0012.jpg', distance: 200, opacity: 1, plane:null}, 
+            {image: '1951_DUR_208_0007.jpg', distance: 200, opacity: 1, plane:null},
+            {image: '1951_DUR_214_0024.jpg', distance: 200, opacity: 1, plane:null}, 
+            {image: '1951_DUR_214_0022.jpg', distance: 200, opacity: 1, plane:null},
+            {image: '1919_CAF_Z-36_0008.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'trocadero2.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'FRAN_0207_3299_L.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'FRAN_0207_0648_L.jpg', distance: 200, opacity: 1, plane:null}];
+            if(imName !== 'undefined')
+                arrayImages.unshift(  {image: imName, distance: 100, opacity: 1, plane:null} );
+            
             // Define initial camera position  // 43.9542987,6.5115427 44.1751125,6.3516113,222m 44.1748836,6.3511125
             // var positionOnGlobe = { longitude: 2.3186303566461626, latitude: 48.86426741804917, altitude: 188.94939874485135 };
             // 42.7211829,1.8392353
@@ -88,9 +173,14 @@
             var viewerDiv = document.getElementById('viewerDiv');
             //var miniDiv = document.getElementById('miniDiv');
 
-            // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false});
-            setupLoadingScreen(viewerDiv, globeView);
+            // Instanciate iTowns view*
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false});
+            //  { sseSubdivisionThreshold: 6,
+            //      noControls: false,
+            //       handleCollision: false}
+
+            //var view = view;
+            setupLoadingScreen(viewerDiv, view);
 
             //3D point number
             var ptname = 0;
@@ -101,14 +191,22 @@
             itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
+
+/*          // USA ORTHO WMTS
+            itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/us.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layerUS = new itowns.ColorLayer('USGS', config);
+                view.addLayer(layerUS).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+*/
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
             itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
@@ -121,7 +219,7 @@
             }
 
             function extrudeBuildings(properties) {
-                return properties.hauteur;
+                return properties.hauteur + 8;
             }
 
             function acceptFeature(properties) {
@@ -147,7 +245,7 @@
                 var i;
                 var mesh;
                 if (meshes.length) {
-                    globeView.notifyChange(globeView.camera.camera3D, true);
+                    view.notifyChange(view.camera.camera3D, true);
                 }
                 for (i = 0; i < meshes.length; i++) {
                     mesh = meshes[i];
@@ -160,7 +258,7 @@
                 meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
             };
 
-            globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
 
             var wfsBuildingSource = new itowns.WFSSource({
@@ -184,21 +282,21 @@
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
-                    //modifyAppearance(mesh);
+                    meshesForeverever.push(mesh);
                 },
                 filter: acceptFeature,
                 overrideAltitudeInToZero: true,
                 source: wfsBuildingSource
             });
-            globeView.addLayer(wfsBuildingLayer);
+            view.addLayer(wfsBuildingLayer);
 
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
 
 
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 //updateScaleWidget();
@@ -209,12 +307,13 @@
                     if(event.altKey){
                         // increment point number
                         ptname += 1;
+                        document.getElementById('countPoints').innerHTML = "Points registered: " + ptname;
                         var pickBuilding = pickingBuildings(event);
 
                         if(pickBuilding.z == 0){
                             // get 3D coordinates on ground
-                            geoposition = globeView.controls.pickGeoPosition(new itowns.THREE.Vector2(event.pageX,event.pageY));
-                            //console.log(globeView.controls.pickGeoPosition(globeView.eventToViewCoords(event.altKey)));
+                            geoposition = view.controls.pickGeoPosition(new itowns.THREE.Vector2(event.pageX,event.pageY));
+                            //console.log(view.controls.pickGeoPosition(view.eventToViewCoords(event.altKey)));
                             // convert coordinates to geographic system
                             let converted = geoposition.as('EPSG:4978'); console.log(converted);
                             //coordinates = converted._values;
@@ -230,7 +329,11 @@
                         // export 3D coordinates to an xml file
                         export3Dcoord(ptname,x,y,z);
                         console.log("Nb of points picked: ", ptname);
-                        
+
+                        // Launch computation after at least 3 points
+                        if(ptname >= 4){
+                            computeResection({}, document.getElementById('img').src.split('/').pop(), false);
+                        }
                     }
                 }
 
@@ -245,8 +348,8 @@
             // Picking on buildings
             function pickingBuildings(event) {
                 var p3D = new itowns.THREE.Vector3();
-                if(globeView.controls.isPaused()) {
-                    var intersects = globeView.pickObjectsAt(event, 3, 'WFS Building');
+                if(view.controls.isPaused()) {
+                    var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
                     if (intersects.length) {
                         //console.log(intersects[0].point);
                         p3D = intersects[0].point;
@@ -280,8 +383,10 @@
                     console.log(response);
                     document.getElementById("img").src= "../data/" + files[0].name;  // Get displayed image name
                     
+                    
                     // Then we create (initialize) the 4 xml files needed. Ground points, 2D image point, camera calibration and the micmac chantier descriptor
                     setTimeout(function() {   // Ugly timer cause src change/affectation takes time and no callback used
+                        arrayImages.unshift(  {image: files[0].name, distance: 100, opacity: 1, plane:null} );
                         initXML2D();
                         initXML3D();
                         createCalib(); // We create a calibration file knowing just the image size 
@@ -293,7 +398,7 @@
 
 
 /*
-            globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
+            view.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
                 updateScaleWidget();
             });
 */
@@ -306,10 +411,475 @@
                 var sphere = new itowns.THREE.Mesh( geometry, material );
                 sphere.position.set(x,y,z); //console.log(sphere.position);
                 sphere.updateMatrixWorld();
-                globeView.scene.add( sphere );
-                globeView.notifyChange();
+                view.scene.add( sphere );
+                view.notifyChange();
             }
-                        
+
+
+            function launchMicMac(event, imgName){
+    
+                var xmlhttp;
+                if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+                    xmlhttp = new XMLHttpRequest();
+                } else { // code for IE6, IE5
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        console.log(this.responseText);
+                        /*
+                        var output_array = JSON.parse(this.responseText);
+                        var output = output_array['output'];
+                        var returned_value = output_array['status'];
+                        console.log(output);
+                        if(returned_value==0){
+                            alert("MicMac calculations are done!");
+                            window.location.href = 'oriented_images.html';
+                            
+                        }else{
+                            alert("MicMac failed to calculate orientation, for more info press on F12");
+                        }
+                        */
+                        window.open('globe.html?imgname=' + imgName);/*oriented_images*/
+                    }
+                };
+
+                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName, true);
+                xmlhttp.send();
+            }
+            
+            // Launch micmac computation
+            function computeResection(event, imgName, show){
+                currentImageName = imgName;
+                var xmlhttp;
+                if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+                    xmlhttp = new XMLHttpRequest();
+                } else { // code for IE6, IE5
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        console.log(this.responseText);
+                        // arrayImages.unshift(  {image: imgName, distance: 100, opacity: 1, plane:null} );
+                        if(show) showResection();
+                    }
+                };
+                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName, true);
+                xmlhttp.send();
+            }
+            
+
+            // Show oriented image using micmac aspro xml
+            function showResection(){
+                
+                // fetch orientation file
+                var source = new FetchSource('../outputs/test/');
+                // parse micmac orientation
+                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
+                    .then(data => MicmacOrientationParser.parse(data, source))
+                    .then(handleOrientation);
+            }
+
+            
+            // Show oriented image using micmac aspro xml
+            function previewResection(){
+                
+                // fetch orientation file
+                var source = new FetchSource('../outputs/test/');
+                // parse micmac orientation
+                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
+                    .then(data => MicmacOrientationParser.parse(data, source))
+                    .then(handleOrientation);
+            }
+
+
+
+            /******************* Rendering functions **********************************************/
+            
+            
+            /* Orientation loading */
+            function cameraHelper(camera, mat) {
+                var wireMaterial = new THREE.MeshBasicMaterial( {color: Math.random() * 0XFFFFFF, wireframe: true} );
+                // create the group (looking at intrinsics only) that should be added to the camera frame.
+                var group = new THREE.Group();
+                // place a frustum
+                {
+                    m = new THREE.Matrix4().getInverse(camera.projectionMatrix);
+                    var geometry = new THREE.BufferGeometry();
+                    var vertices = new Float32Array(15);
+                    // get the 4 corners on the near plane (neglecting distortion)
+                    new THREE.Vector3( -1, -1, -1 ).applyMatrix4(m).toArray(vertices,  3);
+                    new THREE.Vector3( -1,  1, -1 ).applyMatrix4(m).toArray(vertices,  6);
+                    new THREE.Vector3(  1,  1, -1 ).applyMatrix4(m).toArray(vertices,  9);
+                    new THREE.Vector3(  1, -1, -1 ).applyMatrix4(m).toArray(vertices, 12);
+                    var indices = [ 0, 1, 2,  0, 2, 3,  0, 3, 4,  0, 4, 1,  1, 3, 2,  1, 4, 3 ];
+                    geometry.setIndex( indices );
+                    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+                    geometry.addGroup(0, 12, 0);
+                    geometry.addGroup(12, 6, 1);
+                    // viewMaterials[camera.name] = new OrientedImageMaterial(viewMaterialOptions);
+                    // viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
+                    mat.map = uvTexture;
+                    var mesh = new THREE.Mesh( geometry, [wireMaterial, mat] );
+                    mesh.scale.set(1000, 1000, 1000);
+                    group.add(mesh);
+                }
+                // place a sphere at the camera center
+                {
+                    var geometry = new THREE.SphereBufferGeometry(2, 8, 8 );
+                    var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+                   // group.add(new THREE.Mesh( geometry, material ));
+                }
+                return group;
+            };
+
+
+            function setMaterial(material, camera) {
+                material.map =  uvTexture; //textures[camera.name] || uvTexture;
+                camera.getWorldPosition(material.uvwPosition);
+                const m = new THREE.Matrix4().copy(camera.matrixWorldInverse);
+                m.setPosition({x:0,y:0,z:0});
+                material.uvwPreTransform.copy(camera.preProjectionMatrix).multiply(m);
+                material.uvwPostTransform.copy(camera.postProjectionMatrix);
+                if (camera.distos && camera.distos.length == 1 && camera.distos[0].type === 'ModRad') {
+                    material.uvDistortion = camera.distos[0];
+                } else {
+                    material.uvDistortion = { C: new THREE.Vector2(), R: new THREE.Vector4() };
+                    material.uvDistortion.R.w = Infinity;
+                }
+            }
+
+
+            const uvTexture = new itowns.THREE.TextureLoader().load('../data/uv.jpg');
+            
+
+            // function to handle micmac orientation file
+            function handleOrientation(cam) {
+                console.log(cam);
+                // Ugly way, if currently shown and refine orientation we remove oriented cam and recreate all...
+                if(currentOrientationWorkedImage == currentImageName){
+                    view.scene.remove(globalCurrentCamOriented);
+                }
+
+                currentOrientationWorkedImage = currentImageName;
+                //view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
+                arrDisplayedImages.push(cam);
+                textureMaterial = new OrientedImageMaterial({
+                    map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
+                   // tDepth: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
+                    opacity:currentOpacity,
+                    transparent:true,
+                });
+            
+                setMaterial(textureMaterial, cam);
+
+                camHelper = cameraHelper(cam, textureMaterial);
+                var scale = currentDistance / 100;
+                camHelper.scale.set(scale,scale,scale);
+                cam.add(camHelper);
+                cam.updateMatrixWorld();
+                globalCurrentCamOriented = cam;
+                view.scene.add(globalCurrentCamOriented);  
+            // console.log(cam);
+                var pictureInfos = arrayImages[currentIndiceNav];
+                // camera set from micmac orientation file
+                camera = cam;
+                if(pictureInfos.plane == null){
+                    plane = setupPictureFromCamera(camera, '../data/' + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
+                    pictureInfos.plane = plane;
+                }else{
+                    plane = pictureInfos.plane;
+                }
+                plane.visible = false;
+/*
+                var p2 = plane.clone();
+                p2.position.multiplyScalar(1.0001);
+                p2.updateMatrixWorld();
+                view.scene.add(p2);
+*/
+                textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
+                textureMaterial.transparent = true;
+                updateCamera();
+
+                view.camera.camera3D.updateProjectionMatrix();
+
+                // set GUI for oriented image
+                if(!orientedMenu){
+                    orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 20, 500);  
+                    orientedMenu = true; 
+                }
+                
+                view.notifyChange(view.camera.camera3D);
+            }
+
+
+            
+            // fetch orientation file
+            var source = new FetchSource('../outputs/test/');
+            // parse micmac orientation
+            source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
+                .then(data => MicmacOrientationParser.parse(data, source))
+                .then(handleOrientation);
+
+
+            function updatePlaneDistance(value) {
+                transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
+                currentDistance = value;
+                var scale = value / 100;
+                camHelper.scale.set(scale,scale,scale);
+                camHelper.updateMatrixWorld();
+                view.notifyChange(view.camera.camera3D);
+                //console.log(menuGlobe);
+            }
+           
+            function updatePlaneOpacity(value) {
+            //    console.log(value, plane);
+                currentOpacity = value;
+                textureMaterial.transparent = true;
+                plane.material.opacity = value;
+                textureMaterial.opacity = value;
+                view.notifyChange(view.camera.camera3D);
+            }
+
+            function updateZoom(value) {
+                
+                view.camera.camera3D.zoom = value; 
+                view.camera.camera3D.updateProjectionMatrix();
+                view.notifyChange(view.camera.camera3D);
+
+            //    console.log(view.camera);
+            }
+
+            // update camera and view
+            function updateCamera() {
+                setupViewCameraDecomposing(view, camera);
+                //if (cameraHelper) cameraHelper.updateMatrixWorld(true);
+                view.notifyChange(view.camera.camera3D);
+            }
+
+            function projectOnBuildings(){
+                //console.log("projeccc", meshesForeverever);
+                for(var m in meshesForeverever)
+                    meshesForeverever[m].material = textureMaterial;      
+            }
+
+            
+            // eslint-disable-next-line no-unused-vars
+            function menuNavigUI(menu, pictureInfos, subMenu) {
+
+                var navImageGUI = subMenu; //menu.gui.addFolder('Navigation Image');
+                var obj  = { next:function(){ nextImage() }};
+                var obj2 = { projectOnBuildings:function(){projectOnBuildings()}};
+                var obj3 = { resetPosition:function(){ resetPosition() }};
+                var obj4 = { previewResection: function(){ previewResection() }};
+                var obj5 = { fog: 0.};
+                var obj6 = { near: nearProj};
+                var obj7 = { far: farProj};
+                var obj8 = { parallax: 0.};
+                
+                navImageGUI.add(obj,'next');
+                navImageGUI.add(obj2,'projectOnBuildings');
+                navImageGUI.add(obj3,'resetPosition');
+                navImageGUI.add(obj4,'previewResection');
+                navImageGUI.add(obj5,'fog', 0., 1.).onChange(function setFogValue(value){textureMaterial.uniforms.foggy.value = value; view.notifyChange();});
+                navImageGUI.add(obj6,'near', 8., 250.).onChange(function setNearValue(value){textureMaterial.uniforms.near.value = value; nearProj = value; createDepthMap(); view.notifyChange();});
+                navImageGUI.add(obj7,'far', 8., 250.).onChange(function setFarValue(value){textureMaterial.uniforms.far.value = value; farProj = value; createDepthMap() ; view.notifyChange();});
+                navImageGUI.add(obj8,'parallax', 0., 1.).onChange(function setParallaxValue(value){textureMaterial.uniforms.parallax.value = value; view.notifyChange();});
+                view.notifyChange(view.camera.camera3D);
+            }
+
+            // eslint-disable-next-line no-unused-vars
+            function setupPictureUI(menu, pictureInfos, plane, updateDistanceCallback, updateOpacityCallback, updateFOVCallback, view, min, max) {
+                var orientedImageGUI = menu.gui.addFolder('Oriented Image');
+
+                orientedImageGUI.add(pictureInfos, 'distance', min, max).name('Distance').onChange(function distanceChanged(value) {
+                    pictureInfos.distance = value;
+                    updateDistanceCallback(value);
+                    view.notifyChange();
+                });
+
+                orientedImageGUI.add(pictureInfos, 'opacity', 0, 1).name('Opacity').onChange(function opacityChanged(value) {
+                    pictureInfos.opacity = value;
+                    updateOpacityCallback(value);
+                    view.notifyChange();
+                });
+                
+                var pF = {zoom:1.};
+                orientedImageGUI.add( pF, 'zoom', 0.01, 2.).name('Zoom').onChange(function fovChanged(value) {
+                    //pictureInfos.opacity = value;
+                    updateFOVCallback(value);
+                    view.notifyChange();
+                });
+
+                var navMenu = menuNavigUI(menuGlobe, arrayImages, orientedImageGUI);
+            }
+/*
+            function setFogValue(v){
+                textureMaterial.uniforms.foggy.value = v;
+            }
+*/
+      
+            function nextImage(){
+               // meshesForeverever = [];
+                currentIndiceNav = (currentIndiceNav + 1) % arrayImages.length; console.log("currentIndiceNav ",currentIndiceNav);
+                console.log('indice image: ', currentIndiceNav);
+
+                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
+                .then(data => MicmacOrientationParser.parse(data, source))
+                .then(handleOrientation);
+                //view.notifyChange();
+            }
+            
+            // Put scene camera back to original position (center of photocamera)
+            function resetPosition(){
+
+                updateCamera();
+            }
+
+
+
+            // add debugging tools to GUI
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+
+
+            // Ugly way to force refreshing the view 
+            var time = 0;
+            function updateView() {
+               time++;
+               if(time % 100 == 0)
+                    view.notifyChange(view.camera.camera3D);
+               window.requestAnimationFrame(updateView); 
+            }
+
+            updateView();
+
+
+            for (var layer of view.getLayers()) {
+               
+                if (layer.id === 'WFS Building') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+                    });
+                }
+            }
+
+
+
+        // Create depth map for registered images
+        // It's dissociated between tile geometry and buildings... So we mix 2 technics
+        function createDepthMap(){
+            // itowns.renderViewToBuffer(view);
+            // view.scene.overrideMaterial = new THREE.MeshDepthMaterial();
+            // view.mainLoop.gfxEngine.renderer.shadowMap.enabled = true;
+                 view.mainLoop.gfxEngine.renderer.preserveDrawingBuffer = true;
+                 view.mainLoop.gfxEngine.renderer.autoClear = false;
+                 view.mainLoop.gfxEngine.renderer.preserveDrawingBuffer = true;
+                 var aspect =     view.camera.camera3D.aspect;
+                 var fov =     view.camera.camera3D.fov;
+                 var far =     view.camera.camera3D.far;
+                 var near =     view.camera.camera3D.near;
+
+                    view.camera.camera3D.aspect = camera.aspect;
+                    view.camera.camera3D.fov = camera.fov;
+                    view.camera.camera3D.near = nearProj;
+                    view.camera.camera3D.far = farProj;
+                    view.camera.camera3D.updateProjectionMatrix();
+
+                  //  view.camera.camera3D.projectionMatrix = camera.preProjectionMatrix;
+                    //view.scene.remove(globalCurrentCamOriented);
+                    globalCurrentCamOriented.visible = false;
+                 //   view.camera.camera3D.projectionMatrix = camera.projectionMatrix;
+                 //   view.notifyChange(view.camera.camera3D);
+                 //   view.camera.camera3D.updateProjectionMatrix();
+                    // Create a multi render target with Float buffers
+                    target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
+                    target.texture.format = THREE.RGBFormat;
+                    target.texture.minFilter = THREE.NearestFilter;
+                    target.texture.magFilter = THREE.NearestFilter;
+                    target.texture.generateMipmaps = false;
+                    target.stencilBuffer = false;
+                    target.depthBuffer = true;
+                    target.depthTexture = new THREE.DepthTexture();
+                    target.depthTexture.type = THREE.UnsignedShortType;
+                    view.notifyChange(view.camera.camera3D);
+                    // render scene into target 
+                  //  console.log(view.mainLoop.gfxEngine.renderer);
+                    view.mainLoop.gfxEngine.renderer.setRenderTarget( target );
+                    view.mainLoop.gfxEngine.renderer.render( view.scene, view.camera.camera3D );
+                    //var texture = new THREE.DataTexture( buffer, view.camera.width, view.camera.height, THREE.RGBAFormat );
+                    //texture.needsUpdate = true;
+                    //textureMaterial.map = target.depthTexture;//texture//depthTexture;
+                  //  textureMaterial.tDepth = target.depthTexture;
+                    textureMaterial.uniforms.tDepth.value = target.depthTexture;
+                    //textureMaterial.uniforms.foggy.value = 1.;
+                    //view.notifyChange(view.camera.camera3D);
+                    // Back to original cam
+                    view.camera.camera3D.aspect = aspect;
+                    view.camera.camera3D.fov = fov;
+                    view.camera.camera3D.near = near;
+                    view.camera.camera3D.far = far;
+                    view.camera.camera3D.updateProjectionMatrix();
+
+                    globalCurrentCamOriented.visible = true;
+                    view.mainLoop.gfxEngine.renderer.setRenderTarget(null);
+                    view.notifyChange(view.camera.camera3D);
+
+        }    
+
+
+        // SAVE THE DEPTH MAP FOR RE-USE AND OFFLINE USE 
+        function saveDepthMap(){
+            
+            var img = view.mainLoop.gfxEngine.bufferToImage(target.depthBuffer, window.innerWidth, window.innerHeight);
+            document.getElementById('miniDiv').appendChild(img);
+            //console.log(target);
+            /*
+            var dataURL = view.mainLoop.gfxEngine.renderer.domElement.toDataURL();
+            var img = new Image();
+            img.src = dataURL;
+            //console.log(img);
+            document.getElementById('miniDiv').appendChild(img);
+            */
+                
+        }
+
+        /*********** Keyboard functions for preview of orientation ********************/
+            document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName === 'r') {
+                    if(!previewOn){
+                        previewOn = true;
+                        // save current scene camera position
+                        currentCameraScene = {quaternion: view.camera.camera3D.quaternion.clone(), scale: view.camera.camera3D.scale.clone(), position: view.camera.camera3D.position.clone()};
+                        //console.log(currentCameraScene);
+                        // Launch preview of last computed orientation
+                        previewResection();
+                    }
+                }
+            }, false);
+
+            document.addEventListener('keyup', (event) => {
+                const keyName = event.key;
+                if(keyName === 'r') {
+
+                  //  createDepthMap();
+                    previewOn = false;
+                    setupViewCameraDecomposing(view, currentCameraScene);
+                }
+            }, false);
+
+              /*********** Keyboard functions for preview of orientation ********************/
+              document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName === 's') {
+                    saveDepthMap();
+                }
+            }, false);
+
         </script>
     </body>
 </html>

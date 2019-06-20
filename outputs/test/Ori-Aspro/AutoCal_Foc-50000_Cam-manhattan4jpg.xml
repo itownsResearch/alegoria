@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<ExportAPERO>
+     <CalibrationInternConique>
+          <KnownConv>eConvApero_DistM2C</KnownConv>
+          <PP>689.5 530.5</PP>
+          <F>1915.27777777777783</F>
+          <SzIm>1379 1061</SzIm>
+          <CalibDistortion>
+               <ModRad>
+                    <CDist>689.5 530.500000000000114</CDist>
+               </ModRad>
+          </CalibDistortion>
+     </CalibrationInternConique>
+</ExportAPERO>

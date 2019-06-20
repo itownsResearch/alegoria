@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<ExportAPERO>
+     <OrientationConique>
+          <OrIntImaM2C>
+               <I00>0 0</I00>
+               <V10>1 0</V10>
+               <V01>0 1</V01>
+          </OrIntImaM2C>
+          <TypeProj>eProjStenope</TypeProj>
+          <ZoneUtileInPixel>true</ZoneUtileInPixel>
+          <FileInterne>Ori-Aspro/AutoCal_Foc-50000_Cam-palaisRoyale9jpg.xml</FileInterne>
+          <RelativeNameFI>true</RelativeNameFI>
+          <Externe>
+               <AltiSol>4780652.27050530072</AltiSol>
+               <Profondeur>327.765375497029027</Profondeur>
+               <Time>-1.00000000000000002e+30</Time>
+               <KnownConv>eConvApero_DistM2C</KnownConv>
+               <Centre>4200655.22158860788 171396.921256692323 4780354.84322353918</Centre>
+               <IncCentre>1 1 1</IncCentre>
+               <ParamRotation>
+                    <CodageMatr>
+                         <L1>-0.52854669647222785 0.439634333092565888 -0.726195595424916851</L1>
+                         <L2>-0.656537974882222541 -0.753989707912110618 0.021387096580884727</L2>
+                         <L3>-0.538141502939370908 0.488079064833623677 0.687155404028295891</L3>
+                    </CodageMatr>
+               </ParamRotation>
+          </Externe>
+          <Verif>
+               <Tol>0.00100000000000000002</Tol>
+               <ShowMes>true</ShowMes>
+               <Appuis>
+                    <Num>0</Num>
+                    <Im>202.787002562815246 0.200238346755952534</Im>
+                    <Ter>4200496.94423815142 171476.632227214664 4780500.65699107107</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>1</Num>
+                    <Im>580.526489256788068 132.951816559606357</Im>
+                    <Ter>4200406.12318774499 171433.822342804371 4780527.585619363</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>2</Num>
+                    <Im>320.031829835191672 719.92126464947205</Im>
+                    <Ter>4200562.31229722686 171385.441390622407 4780502.39385790378</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>3</Num>
+                    <Im>981.276428223520497 321.55220031858596</Im>
+                    <Ter>4200475.96037317533 171365.325415104628 4780449.97114573512</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>4</Num>
+                    <Im>270.348114015272472 473.187149045858121</Im>
+                    <Ter>4200549.77510003932 171411.757052851666 4780494.9949796591</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>5</Num>
+                    <Im>877.397399902871371 418.633438106753601</Im>
+                    <Ter>4200455.70475263707 171358.09722968124 4780486.27452630922</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>6</Num>
+                    <Im>258.634918211084084 664.89450072613613</Im>
+                    <Ter>4200563.02401939034 171395.134086746955 4780503.55835630372</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>7</Num>
+                    <Im>986.384460448856203 509.063323973045726</Im>
+                    <Ter>4200353.87617474981 171304.859140998276 4780546.90999619849</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>8</Num>
+                    <Im>176.924667360493572 162.24954986446761</Im>
+                    <Ter>4200505.1595325619 171462.664788625436 4780520.04631552659</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>9</Num>
+                    <Im>953.04132080233569 161.893981934181511</Im>
+                    <Ter>4200388.61485678703 171378.99633754688 4780478.32277392969</Ter>
+               </Appuis>
+          </Verif>
+          <ConvOri>
+               <KnownConv>eConvApero_DistM2C</KnownConv>
+          </ConvOri>
+     </OrientationConique>
+</ExportAPERO>
