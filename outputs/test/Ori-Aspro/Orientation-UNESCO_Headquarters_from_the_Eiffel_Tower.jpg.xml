@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<ExportAPERO>
+     <OrientationConique>
+          <OrIntImaM2C>
+               <I00>0 0</I00>
+               <V10>1 0</V10>
+               <V01>0 1</V01>
+          </OrIntImaM2C>
+          <TypeProj>eProjStenope</TypeProj>
+          <ZoneUtileInPixel>true</ZoneUtileInPixel>
+          <FileInterne>Ori-Aspro/AutoCal_Foc-50000_Cam-UNESCOHeadquartersfromtheEiffelTowerjpg.xml</FileInterne>
+          <RelativeNameFI>true</RelativeNameFI>
+          <Externe>
+               <AltiSol>4779630.51645246707</AltiSol>
+               <Profondeur>181.535793918031374</Profondeur>
+               <Time>-1.00000000000000002e+30</Time>
+               <KnownConv>eConvApero_DistM2C</KnownConv>
+               <Centre>4201610.90580333956 169060.520825405139 4779740.12824876048</Centre>
+               <IncCentre>1 1 1</IncCentre>
+               <ParamRotation>
+                    <CodageMatr>
+                         <L1>0.590162138903334133 -0.769509065772628564 0.244058287093018272</L1>
+                         <L2>-0.567355083730503917 -0.180286028412129901 0.8034955861263543</L2>
+                         <L3>-0.574296838551453859 -0.612660383616500104 -0.542982868584901301</L3>
+                    </CodageMatr>
+               </ParamRotation>
+          </Externe>
+          <Verif>
+               <Tol>0.00100000000000000002</Tol>
+               <ShowMes>true</ShowMes>
+               <Appuis>
+                    <Num>0</Num>
+                    <Im>177.661536576255855 267.624727727052289</Im>
+                    <Ter>4201624.17992954608 169258.494758565968 4779613.10717023164</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>1</Num>
+                    <Im>207.187345029042376 272.788041353490712</Im>
+                    <Ter>4201630.96459543798 169285.523869885277 4779585.07636968233</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>2</Num>
+                    <Im>211.419960974483701 138.211689471255255</Im>
+                    <Ter>4201663.72474618535 169279.410110338358 4779619.70788960624</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>3</Num>
+                    <Im>89.8402106782712906 117.735804799404974</Im>
+                    <Ter>4201627.58670496196 169176.23615222011 4779695.17313593347</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>4</Num>
+                    <Im>119.91073668405204 93.4597003503859725</Im>
+                    <Ter>4201633.87452282012 169177.972022987058 4779693.34284777939</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>5</Num>
+                    <Im>173.673339486650036 39.1961691726859556</Im>
+                    <Ter>4201640.19170014746 169157.259615410178 4779700.80664453935</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>6</Num>
+                    <Im>382.568156004756361 89.8727971334619582</Im>
+                    <Ter>4201701.09398228489 169237.690055581799 4779607.78068200033</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>7</Num>
+                    <Im>429.39746618149735 91.5082649003503832</Im>
+                    <Ter>4201686.09990477189 169190.289288072032 4779632.25018337462</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>8</Num>
+                    <Im>558.302622555886046 102.873909833585827</Im>
+                    <Ter>4201709.09296509065 169182.639446407236 4779603.12132472638</Ter>
+               </Appuis>
+               <Appuis>
+                    <Num>9</Num>
+                    <Im>269.522609473397722 95.5925363317497983</Im>
+                    <Ter>4201638.51969587896 169138.88648965102 4779694.49878460448</Ter>
+               </Appuis>
+          </Verif>
+          <ConvOri>
+               <KnownConv>eConvApero_DistM2C</KnownConv>
+          </ConvOri>
+     </OrientationConique>
+</ExportAPERO>

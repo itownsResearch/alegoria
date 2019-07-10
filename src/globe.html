@@ -96,7 +96,9 @@
         <script src="../itowns-photogrammetric-camera/examples/js/GUI/GuiTools.js"></script>
         <script src="../itowns-photogrammetric-camera/dist/itowns.js"></script>
         <script src="../itowns-photogrammetric-camera/examples/js/loading_screen.js"></script>
+        <script src="../itowns-photogrammetric-camera/examples/js/ThreeLoader.js"></script>
         <script src="../itowns-photogrammetric-camera/dist/debug.js"></script>
+        <script src="../itowns-photogrammetric-camera/examples/js/proj4defs/2154.js"></script>
         <script src="scene2d.js"></script>
         <script src="scene3dv2.js"></script>
         <script src="createCalibrationFile.js"></script>
@@ -116,6 +118,8 @@
             var temp = parameters[0].split("=");
             var imName = unescape(temp[1]);
             //console.log(imName);
+
+            var orientedImageLayer;
             
             var pictureInfos;
             var camera;
@@ -137,16 +141,19 @@
             var arrDisplayedImages = [];
             var meshesForeverever = [];
             var previewOn = false;
-            var nearProj = 10;
+            var nearProj = 1;
             var farProj = 500;
             var target;
+            var olayer;  // Oriented Image Layer
+            var model; // 3D model loaded
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
-            arrayImages = [{image: 'paris-expo-uni-1900-vue-aerienne-02.jpg', distance: 200, opacity: 1, plane:null},
+            arrayImages = [{image: 'LOC-04753X.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'notredame.jpg', distance: 200, opacity: 1, plane:null},
+            {image: 'rueVieilleDuTemple8.jpg', distance: 600, opacity: 1, plane:null},
             {image: 'planNotreDame.jpg', distance: 200, opacity: 1, plane:null},
             {image: 'plandetailleCite.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'notredame.jpg', distance: 200, opacity: 1, plane:null},
             {image: 'pontlouisphilippe.jpg', distance: 200, opacity: 1, plane:null},
             {image: '1919_CAF_C-1_0012.jpg', distance: 200, opacity: 1, plane:null}, 
             {image: '1951_DUR_208_0007.jpg', distance: 200, opacity: 1, plane:null},
@@ -174,7 +181,8 @@
             //var miniDiv = document.getElementById('miniDiv');
 
             // Instanciate iTowns view*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false});
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false,noControls: false,});
+            view.camera.camera3D.near = 0.4;
             //  { sseSubdivisionThreshold: 6,
             //      noControls: false,
             //       handleCollision: false}
@@ -215,11 +223,14 @@
             var color = new itowns.THREE.Color();
             function altitudeBuildings(properties) {
                 //console.log(properties.z_min, properties.hauteur);
-                return properties.z_min - properties.hauteur;
+                return properties.z_min - properties.hauteur - 3;
             }
 
             function extrudeBuildings(properties) {
-                return properties.hauteur + 8;
+                if (properties.id.indexOf('bati_remarquable') === 0) 
+                    return properties.hauteur;
+                    else
+                    return properties.hauteur + 20;
             }
 
             function acceptFeature(properties) {
@@ -291,6 +302,39 @@
             view.addLayer(wfsBuildingLayer);
 
 
+            // Test with geoserver Mathieu
+            var wfsGeoserver = new itowns.WFSSource({
+                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                version: '1.0.0',
+                typeName: 'alegoria%3Afrejus',
+                projection: 'EPSG:4326',
+                ipr: 'Alegoria',
+                format: 'json',
+                zoom: { min: 6, max: 15 },
+              
+            });
+
+            var wfsGeoserverLayer = new itowns.GeometryLayer('WFS Geoserver', new itowns.THREE.Group(), {
+                update: itowns.FeatureProcessing.update,
+                convert: itowns.Feature2Mesh.convert({
+                    color: console.log("coooocooo"),
+                    batchId: function (property, featureId) { return featureId; },
+                    altitude: function(){console.log(altitudeeeeeeeee);},
+                    extrude: extrudeBuildings }),
+               /* onMeshCreated: function scaleZ(mesh) {
+                    mesh.scale.z = 0.01;
+                    meshes.push(mesh);
+                    meshesForeverever.push(mesh);
+                },*/
+                overrideAltitudeInToZero: true,
+                source: wfsGeoserver
+            });
+            view.addLayer(wfsGeoserverLayer);
+
+
+
+
+
             var menuGlobe = new GuiTools('menuDiv', view);
 
 
@@ -337,11 +381,7 @@
                     }
                 }
 
-                // Default creation of camera files
-               // initXML2D();
-               // initXML3D();
-               // createCalib(); // We create a calibration file knowing just the image size 
-               // createMicmacChantierDescripteur(); // We create the micmac chantier descriptor
+                // load3DModel();
             });
 
 
@@ -405,7 +445,7 @@
             // Draw a sphere to show where the 3D picking has been done
             function show3DPicking(x,y,z, iteration){
 
-                var geometry = new itowns.THREE.SphereGeometry( 3, 16, 16 );
+                var geometry = new itowns.THREE.SphereGeometry( 0.1, 16, 16 );
                 var col = new itowns.THREE.Color(0XFFFF00);
                 var material = new itowns.THREE.MeshBasicMaterial( {color: col.lerpHSL(new itowns.THREE.Color(0XFF0000), (iteration % 8) / 7), transparent:true, opacity:0.8} );
                 var sphere = new itowns.THREE.Mesh( geometry, material );
@@ -604,14 +644,23 @@
                 updateCamera();
 
                 view.camera.camera3D.updateProjectionMatrix();
-
+/*
+                var geometry = new itowns.THREE.SphereGeometry( 20, 16, 16 );
+                var sphere = new itowns.THREE.Mesh( geometry, textureMaterial);// textureMaterial);//new THREE.MeshBasicMaterial());
+                sphere.material.side = THREE.DoubleSide;
+                sphere.position.copy(cam.position.clone()); console.log(sphere.position);
+                sphere.updateMatrixWorld();
+                view.scene.add( sphere );
+                view.notifyChange();
+*/
                 // set GUI for oriented image
                 if(!orientedMenu){
-                    orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 20, 500);  
+                    orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 1, 1000);  
                     orientedMenu = true; 
                 }
                 
                 view.notifyChange(view.camera.camera3D);
+                
             }
 
 
@@ -663,6 +712,23 @@
                 //console.log("projeccc", meshesForeverever);
                 for(var m in meshesForeverever)
                     meshesForeverever[m].material = textureMaterial;      
+
+                // Add background
+                var copyBackground = olayer.background.clone();
+                console.log(olayer);
+                copyBackground.material = textureMaterial; //new THREE.MeshBasicMaterial(); //textureMaterial;
+                copyBackground.position.addScalar(0.1);
+                copyBackground.updateMatrixWorld();
+                copyBackground.material.side = THREE.DoubleSide;
+                copyBackground.material.transparent = true;
+                copyBackground.material.opacity = 0.99;
+                console.log("copyyyy", copyBackground);
+                view.scene.add(copyBackground);
+                view.notifyChange();
+
+                 // set camera's layer to do not disturb the picking
+                 model.traverse(function _(obj) { obj.material = textureMaterial;}) //console.log(obj);  /*obj.layers.set(colladaID); */ });
+
             }
 
             
@@ -678,6 +744,7 @@
                 var obj6 = { near: nearProj};
                 var obj7 = { far: farProj};
                 var obj8 = { parallax: 0.};
+                var obj9 = { activateStreetLevel: function(){ activateStreetLevel() }};
                 
                 navImageGUI.add(obj,'next');
                 navImageGUI.add(obj2,'projectOnBuildings');
@@ -687,6 +754,7 @@
                 navImageGUI.add(obj6,'near', 8., 250.).onChange(function setNearValue(value){textureMaterial.uniforms.near.value = value; nearProj = value; createDepthMap(); view.notifyChange();});
                 navImageGUI.add(obj7,'far', 8., 250.).onChange(function setFarValue(value){textureMaterial.uniforms.far.value = value; farProj = value; createDepthMap() ; view.notifyChange();});
                 navImageGUI.add(obj8,'parallax', 0., 1.).onChange(function setParallaxValue(value){textureMaterial.uniforms.parallax.value = value; view.notifyChange();});
+                navImageGUI.add(obj9,'activateStreetLevel');
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -715,12 +783,7 @@
 
                 var navMenu = menuNavigUI(menuGlobe, arrayImages, orientedImageGUI);
             }
-/*
-            function setFogValue(v){
-                textureMaterial.uniforms.foggy.value = v;
-            }
-*/
-      
+
             function nextImage(){
                // meshesForeverever = [];
                 currentIndiceNav = (currentIndiceNav + 1) % arrayImages.length; console.log("currentIndiceNav ",currentIndiceNav);
@@ -732,10 +795,123 @@
                 //view.notifyChange();
             }
             
+
             // Put scene camera back to original position (center of photocamera)
             function resetPosition(){
-
                 updateCamera();
+            }
+
+
+            // Activate street level imagery
+            function activateStreetLevel(){
+                
+                // create Immersive control
+       /*         view.controls = new itowns.StreetControls(view, {
+                    animationDuration: 50,
+                });
+        */
+                // limit camera far, to increase performance
+                view.camera.camera3D.near = 0.8;
+         /*       view.camera.camera3D.far = 10000;
+                view.camera.camera3D.near = 0.1;
+                // open camera fov
+                view.camera.camera3D.fov = 75;
+                view.camera.camera3D.updateProjectionMatrix();
+           */     // disable atmosphere
+                view.getLayerById('atmosphere').visible = false;
+                // Prepare oriented image source
+                var orientedImageSource = new itowns.OrientedImageSource({  
+                        url: 'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' //  // 2 Zero to remove 'CalibV4-140407_0566-{cameraId}-00008_0000{panoId}.jpg' // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' // 'Paris2015-150123_0593-{cameraId}-00004_0000{panoId}.jpg'//'Paris-150630_0723-{cameraId}-00005_0000{panoId}.jpg'  // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' 
+                    });
+
+                // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
+                var orientationsUrl = 'panoramicsMetaDataParis.geojson';
+                var calibrationUrl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json';
+
+                // Fetch the two files
+                var promises = [];
+                var networkOptions = {crossOrigin: ''};
+                promises.push(itowns.Fetcher.json(orientationsUrl, networkOptions) );
+                promises.push(itowns.Fetcher.json(calibrationUrl, networkOptions) ) ;
+                Promise.all(promises).then((res) => {
+
+                    var orientation = res[0];
+                    var calibration = res[1];
+
+                    // Create oriented image layer
+                    olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
+                        // Radius in meter of the sphere used as a background.
+                        backgroundDistance: 450,
+                        source: orientedImageSource,
+                        orientation: orientation,
+                        calibration: calibration,
+                        projection: view.referenceCrs,
+                        onPanoChanged: (e) => {
+                        /*    view.controls.setPreviousPosition(e.previousPanoPosition);
+                            view.controls.setCurrentPosition(e.currentPanoPosition);
+                            view.controls.setNextPosition(e.nextPanoPosition);
+                        */    }
+                    });
+
+                    // when oriented image layer is ready..
+                    view.addLayer(olayer, view.tileLayer).then(function addWfsLayer(orientedImageLayer) {
+                    
+                        // prepare WFS source for the buildings
+                        var wfsBuildingSource = new itowns.WFSSource({
+                            url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                            version: '2.0.0',
+                            typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                            projection: 'EPSG:4326',
+                            ipr: 'IGN',
+                            format: 'application/json',
+                            zoom: { min: 15, max: 15 },
+                        });
+
+                        // create geometry layer for the buildings
+                        var wfsBuildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+                            update: itowns.FeatureProcessing.update,
+                            convert: itowns.Feature2Mesh.convert({
+                                altitude: altitudeBuildings,
+                                extrude: extrudeBuildings }),
+
+                            // when a building is created, it get the projective texture mapping, from oriented image layer.
+                            onMeshCreated: (mesh) => mesh.traverse(object => object.material = orientedImageLayer.material),
+                            source: wfsBuildingSource,
+                            overrideAltitudeInToZero: true,
+                        });
+
+                        // add the created building layer, and debug UI
+                        view.addLayer(wfsBuildingLayer).then(function addDebugUI(buildingLayer) {
+                            var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, buildingLayer);
+                            debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
+                        });
+
+                        // Test to project on a 3D model
+                        // model.traverse(function _(obj) { obj.material = olayer.material; });
+                    });
+
+                 //   view.camera.camera3D.position.copy({x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});
+                    view.notifyChange(view.camera.camera3D);
+            /*        // set camera to current panoramic
+                    view.controls.setCameraToCurrentPosition();
+                    view.controls.moveCameraVertical(0.85);
+                    view.notifyChange(view.camera.camera3D);
+                    console.log(view.controls);
+                    console.log(view.camera.camera3D);
+                */    
+                    console.log(olayer);
+                 //   model.traverse(function _(obj) { obj.material = olayer.material; });
+                    }
+                
+                    
+
+                );
+            }
+
+
+            function centerCameraStreetView(){
+                view.camera.camera3D.position.copy({x: 4199825.822840914, y: 172469.5643900863, z: 4781089.122163953}); //{x: 4200557.133126016, y: 172016.98119668392, z: 4780462.11547708});//{x: 4200012.882959826, y: 173338.79678516634, z: 4780896.915537954});//{x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});//{x: 4202444.187983729, y: 172504.46625564503, z: 4778798.559683817});//{x: 4199402.418293162, y: 170632.28074215917, z: 4781516.8235254865});//{x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});
+                view.notifyChange(view.camera.camera3D);
             }
 
 
@@ -749,8 +925,10 @@
             var time = 0;
             function updateView() {
                time++;
-               if(time % 100 == 0)
+               if(time % 100 == 0){
                     view.notifyChange(view.camera.camera3D);
+                    //console.log(view.controls);
+               }
                window.requestAnimationFrame(updateView); 
             }
 
@@ -847,6 +1025,42 @@
                 
         }
 
+        function load3DModel(){
+             // ThreeLoader can load each format proposed in ThreeJs examples loaders : https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
+              var promiseCollada = ThreeLoader.load('GLTF', 'repuStatue/scene.gltf')
+                .then(collada => {
+                    model = collada.scene;
+
+                    // building coordinate
+                    var coord = new itowns.Coordinates('EPSG:4326', 2.36381, 48.86754, 30);
+                    var colladaID = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+
+                    model.position.copy(coord.as(view.referenceCrs));
+                    // align up vector with geodesic normal
+                    model.lookAt(model.position.clone().add(coord.geodesicNormal));
+                    // user rotate building to align with ortho image
+                    model.rotateX(Math.PI / 2);
+                    model.rotateY(1.32 * Math.PI / 2);
+                    model.scale.set(1., 1., 1.);
+
+                    // set camera's layer to do not disturb the picking
+                    model.traverse(function _(obj) { obj.layers.set(colladaID); });
+                    //model.traverse(function _(obj) { obj.material = orientedImageLayer.material; });
+                    view.camera.camera3D.layers.enable(colladaID);
+
+                    // update coordinate of the mesh
+                    model.updateMatrixWorld();
+
+                    view.scene.add(model);
+                    var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+                    light.position.copy(coord.as(view.referenceCrs));
+                    light.position.addScalar(30);
+                    light.updateMatrixWorld();
+                    view.scene.add( light ); 
+                    view.notifyChange();
+                });
+        }
+
         /*********** Keyboard functions for preview of orientation ********************/
             document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
@@ -876,7 +1090,18 @@
               document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
                 if(keyName === 's') {
-                    saveDepthMap();
+                    //saveDepthMap();
+                    activateStreetLevel();
+                }
+            }, false);
+
+            
+              /*********** Keyboard functions for preview of orientation ********************/
+              document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName === 'c') {
+                    //saveDepthMap();
+                    centerCameraStreetView();
                 }
             }, false);
 

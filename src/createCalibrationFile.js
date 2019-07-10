@@ -39,7 +39,7 @@ function createCalib(){
     element1Calib.appendChild(subElement2);
 
     var subElement3 = xmlDocCalib.createElement('F');
-    subElement3.textContent = Math.max(imageXX_width, imageXX_height) * 50 / 36;
+    subElement3.textContent = 0.6 *  Math.max(imageXX_width, imageXX_height) * 50 / 36;   // 0.5 to reduce focal (dirty test)
     element1Calib.appendChild(subElement3);
 
     var subElement4 = xmlDocCalib.createElement('SzIm');

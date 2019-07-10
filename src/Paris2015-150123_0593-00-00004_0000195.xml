@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<panoramique>
+<filename> Paris2015-150123_0593-00-00004_0000195 </filename>
+<meta_data_version> 2.0 </meta_data_version>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<pospac_event>
+<gps_time_s>470542.85200</gps_time_s>
+<dist_to_begin>8742.44</dist_to_begin>
+<projection>
+<projection_name>Lambert93</projection_name>
+<grid_alti>Raf09</grid_alti>
+<easting>652334.66</easting>
+<northing>6860043.48</northing>
+<altitude>38.21</altitude>
+</projection>
+<latitude_wgs84>48.8386780280</latitude_wgs84>
+<longitude_wgs84>2.3505921455</longitude_wgs84>
+<grs80_height>82.018</grs80_height>
+<roll>1.344635</roll>
+<pitch>0.853796</pitch>
+<heading>298.440277</heading>
+<east_velocity>0.852</east_velocity>
+<north_velocity>-0.234</north_velocity>
+<up_velocity>-0.027</up_velocity>
+<east_sd>0.013645</east_sd>
+<north_sd>0.015301</north_sd>
+<height_sd>0.047679</height_sd>
+<roll_sd>0.012798</roll_sd>
+<pitch_sd>0.012809</pitch_sd>
+<heading_sd>0.055655</heading_sd>
+</pospac_event>
+<nav_event>
+<gps_date>20150123</gps_date>
+<gps_time_s>470542.85160</gps_time_s>
+<utc_time_hmsdec>104206.85160</utc_time_hmsdec>
+<PC_time_stamp>130664872017960000</PC_time_stamp>
+<trig_decision>DISTANCE</trig_decision>
+<DistFromLastEvent>2.83</DistFromLastEvent>
+<ApplanixData>
+<position>
+<longitude_wgs84>2.35061336</longitude_wgs84>
+<latitude_wgs84>48.83868027</latitude_wgs84>
+<Altitude_Msl>40.80</Altitude_Msl>
+<Geoid_separation>47.30</Geoid_separation>
+<quality>CODE</quality>
+<nbSat>9</nbSat>
+<speed_kph>10.10</speed_kph>
+</position>
+<orientation>
+<roll>1.30</roll>
+<pitch>0.85</pitch>
+<heading>298.63</heading>
+</orientation>
+</ApplanixData>
+</nav_event>
+<nbImage> 9 </nbImage>
+<image>
+<image_filename>Paris2015-150123_0593-11-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664867635860000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>284</whitebalance_ub>
+<whitebalance_vr>330</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>1920</width>
+<height>1080</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F210C</CameraName>
+<CameraSerial>268927071</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-12-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664867636020000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>284</whitebalance_ub>
+<whitebalance_vr>330</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>1920</width>
+<height>1080</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F210C</CameraName>
+<CameraSerial>268927064</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-51-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664867636020000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>284</whitebalance_ub>
+<whitebalance_vr>330</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>1920</width>
+<height>1080</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F210C</CameraName>
+<CameraSerial>268927066</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-52-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664867636180000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>284</whitebalance_ub>
+<whitebalance_vr>330</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>1920</width>
+<height>1080</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F210C</CameraName>
+<CameraSerial>268927072</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-300-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664867749620000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>320</whitebalance_ub>
+<whitebalance_vr>370</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>2048</width>
+<height>2048</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F421C</CameraName>
+<CameraSerial>269108908</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-301-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664868571030000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>305</whitebalance_ub>
+<whitebalance_vr>430</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>2048</width>
+<height>2048</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F421C</CameraName>
+<CameraSerial>269111231</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-302-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>128291772294790000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>315</whitebalance_ub>
+<whitebalance_vr>410</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>2048</width>
+<height>2048</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F421C</CameraName>
+<CameraSerial>269111227</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-303-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>130664868570870000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>320</whitebalance_ub>
+<whitebalance_vr>410</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>2048</width>
+<height>2048</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F421C</CameraName>
+<CameraSerial>269111230</CameraSerial>
+</sensor_config>
+</image>
+<image>
+<image_filename>Paris2015-150123_0593-304-00004_0000195</image_filename>
+<metadata>
+<chantier> Paris2015 </chantier>
+<date_pc> 150123 </date_pc>
+<session> 593 </session>
+<section> 4 </section>
+<numero> 195 </numero>
+</metadata>
+<local_machine_timestamp>128291772294630000</local_machine_timestamp>
+<sensor_config>
+<time_base>1</time_base>
+<shutter_auto>0</shutter_auto>
+<shutter>931</shutter>
+<gain_auto>0</gain_auto>
+<gain>1</gain>
+<whitebalance_auto>0</whitebalance_auto>
+<whitebalance_ub>310</whitebalance_ub>
+<whitebalance_vr>420</whitebalance_vr>
+<smear_reduction>0</smear_reduction>
+<origin_x>0</origin_x>
+<origin_y>0</origin_y>
+<width>2048</width>
+<height>2048</height>
+<color_mode>136</color_mode>
+<framerate>6</framerate>
+<CameraName>AVTPike F421C</CameraName>
+<CameraSerial>269111228</CameraSerial>
+</sensor_config>
+</image>
+</panoramique>
