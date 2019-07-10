@@ -114,10 +114,11 @@
             var THREE = itowns.THREE;
 
             // Get possible parameters from url like imagename
-            var parameters = location.search.substring(1).split("&");
-            var temp = parameters[0].split("=");
-            var imName = unescape(temp[1]);
-            //console.log(imName);
+            var urlpage = new URL(location);
+            var imName = urlpage.searchParams.get("imgname");
+            var posInit = urlpage.searchParams.get("pos");
+            if(posInit) posInit = posInit.split(",");
+            //console.log(imName, "  ", posInit);
 
             var orientedImageLayer;
             
@@ -163,7 +164,7 @@
             {image: 'trocadero2.jpg', distance: 200, opacity: 1, plane:null},
             {image: 'FRAN_0207_3299_L.jpg', distance: 200, opacity: 1, plane:null},
             {image: 'FRAN_0207_0648_L.jpg', distance: 200, opacity: 1, plane:null}];
-            if(imName !== 'undefined')
+            if(imName !== null)
                 arrayImages.unshift(  {image: imName, distance: 100, opacity: 1, plane:null} );
             
             // Define initial camera position  // 43.9542987,6.5115427 44.1751125,6.3516113,222m 44.1748836,6.3511125
@@ -171,6 +172,8 @@
             // 42.7211829,1.8392353
             // 48.8365154,-3.3129326 ( rocher de la sentinelle)
             var positionOnGlobe = { longitude:2.3186303566461626, latitude: 48.86426741804917, altitude: 1878.615379151888 };
+            if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
+            //console.log(positionOnGlobe);
             //var miniView;
             var minDistance = 10000000;
             var maxDistance = 30000000;
@@ -301,7 +304,8 @@
             });
             view.addLayer(wfsBuildingLayer);
 
-
+            
+/*
             // Test with geoserver Mathieu
             var wfsGeoserver = new itowns.WFSSource({
                 url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
@@ -321,16 +325,12 @@
                     batchId: function (property, featureId) { return featureId; },
                     altitude: function(){console.log(altitudeeeeeeeee);},
                     extrude: extrudeBuildings }),
-               /* onMeshCreated: function scaleZ(mesh) {
-                    mesh.scale.z = 0.01;
-                    meshes.push(mesh);
-                    meshesForeverever.push(mesh);
-                },*/
+               
                 overrideAltitudeInToZero: true,
                 source: wfsGeoserver
             });
             view.addLayer(wfsGeoserverLayer);
-
+*/
 
 
 
@@ -663,15 +663,15 @@
                 
             }
 
-
-            
-            // fetch orientation file
-            var source = new FetchSource('../outputs/test/');
-            // parse micmac orientation
-            source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
-                .then(data => MicmacOrientationParser.parse(data, source))
-                .then(handleOrientation);
-
+            // If no initial position passed in the URL we launch the first registered image
+            if(! posInit){
+                // fetch orientation file
+                var source = new FetchSource('../outputs/test/');
+                // parse micmac orientation
+                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
+                    .then(data => MicmacOrientationParser.parse(data, source))
+                    .then(handleOrientation);
+            }
 
             function updatePlaneDistance(value) {
                 transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
