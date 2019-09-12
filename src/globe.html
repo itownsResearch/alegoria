@@ -69,12 +69,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="../itowns-photogrammetric-camera/examples/js/GUI/dat.gui/dat.gui.min.js"></script>
         <script src="../itowns-photogrammetric-camera/examples/js/OrientedImageHelper.js"></script>
+
+        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
         
     </head>
     <body>
-           
 
-        <div id="viewerDiv">
+        <div id="viewerDiv">        
                 <p id="info">
                         <img id="imgLogo" src="../data/logoAlegoria.jpg" onmousedown="getImgCoordOnClick(event)">
                         <br> 
@@ -103,14 +104,52 @@
         <script src="scene3dv2.js"></script>
         <script src="createCalibrationFile.js"></script>
         <script src="createMicmacChantierDescripteur.js"></script>
+  <!--      <script type="module"  src="geojsonToWFST.js"></script>-->
+        <script type="module">
+                import * as wfs from './geojsonToWFST.js'
+                console.log("WWWWWWWWWWWWWWWWW", wfs);
+                
+                const nullIsland = {
+                    type: 'Feature',
+                    properties: {place_name: 'null island'},
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    id: 'feature_id'
+                };
+                const params = {geometry_name: 'geom', layer: 'my_lyr', ns: 'my_namespace'};
+
+                // create a stringified transaction inserting null island
+                wfs.Transaction(
+                wfs.Insert(nullIsland, params),
+                {
+                    nsAssignments: {
+                    my_namespace: 'https://example.com/namespace_defn.xsd'
+                    }
+                }
+                );
+
+                // create a stringified transaction updating null island's name
+                wfs.Transaction(
+                wfs.Update({properties: {place_name: 'not Atlantis'}, id: nullIsland.id }),
+                {nsAssignments: 'wao'}
+                )
+                // same deal, but deleting it
+                wfs.Transaction(
+                wfs.Delete({id: nullIsland.id}, params),
+                {nsAssignments: 'wao'}
+                )
+         </script>
        
         <script type="text/javascript">
-
+            
             // THREE photogrammetric camera variables
             var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
             var MicmacOrientationParser = itowns.MicmacOrientationParser;
             var FetchSource = itowns.FetchSource;
             var OrientedImageMaterial = itowns.OrientedImageMaterial;
+            var RadialDistortion = itowns.RadialDistortion;
             var THREE = itowns.THREE;
 
             // Get possible parameters from url like imagename
@@ -136,7 +175,12 @@
             var currentCameraScene;
             var meshes = [];
             var scaler;
-            var textureMaterial;
+            var textureMaterial = new OrientedImageMaterial({
+                    map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
+                   // tDepth: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
+                   // opacity: currentOpacity,
+                    transparent:true,
+                });
             var currentOpacity = 1;
             var currentDistance = 100;
             var arrDisplayedImages = [];
@@ -147,6 +191,15 @@
             var target;
             var olayer;  // Oriented Image Layer
             var model; // 3D model loaded
+            var arrAppariement = [];
+            var currentObjUnderMouse;
+            var lastObjUnderMouse;
+            var firstMoveOut = false; // when mouse over leave camerahelper
+            var scaleOff = false;
+            var nbToModify = 0;  // Ugly init for animation
+            var scalingOffisOn = false;
+            // var arrAppariementScene = [];
+            // var arrAppariementOld = [];
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
@@ -186,6 +239,10 @@
             // Instanciate iTowns view*
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false,noControls: false,});
             view.camera.camera3D.near = 0.4;
+
+            var sceneAllCams = new THREE.Object3D();  // Object containg all oriented images cam
+            view.scene.add(sceneAllCams);
+            
             //  { sseSubdivisionThreshold: 6,
             //      noControls: false,
             //       handleCollision: false}
@@ -305,39 +362,156 @@
             view.addLayer(wfsBuildingLayer);
 
             
-/*
+            function colorLine(properties) {
+                if (properties) {
+                    rgb = properties.couleur.split(' ');
+                    return color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                }
+                return color.setRGB(1, 1, 1);
+            }
+
+
+            function setMaterialLineWidth(result) {
+                console.log(result);
+                result.traverse(function _setLineWidth(mesh) {
+                    if (mesh.material) {
+                        mesh.material.linewidth = 5;
+                    }
+                });
+            }
+            
+
+            // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
+            // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
+            var pvaTexture = new itowns.THREE.TextureLoader().load('IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826.jpg');
+
+            // Handles PVA representation when received from WFS
+            // Load image and project it on the ground using the image properties
+            function workWithMesh(m){
+
+                //console.log(m);
+                m.material.size = 100;
+                for (var i = 0; i < m.feature.geometry.length; ++i){
+                    // Let's download the image
+                    var prop = m.feature.geometry[i].properties;
+                    var imgName = prop.name;
+                    //https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/2324-0191/IGNF_PVA_1-0__1947-04-10__C2324-0191_1947_CDP2368_0002.jp2&LYR=20&WID=200&CVT=JPEG
+                    var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&LYR=20&WID=1024&CVT=JPEG';
+                    //url = "IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826_xs.jpg";  // temp for test
+                    //console.log(url);
+                    // Temp to test with cropped image (Giordano)
+                  //  if(url.includes("843"))
+                     //   url ="http://134.158.74.36/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
+
+                    // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
+                    // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
+                    //var pvaTexture = new itowns.THREE.TextureLoader().load('IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826.jpg');
+
+
+                    
+                    // We then create a photogrammetric camera using the PVA properties
+                    // Intrinsec properties
+                    var focal =  [prop.fx, prop.fy];
+                    var size = [prop.sx, prop.sy];
+                    //[ 9100, 9500 ]; //prop.px * 2, prop.py * 2];
+                    var point = [ prop.px, prop.py ];
+                    var disto = [ { type: "ModRad", C: new THREE.Vector2(prop.cx, prop.cy), R: new THREE.Vector4(prop.c3, prop.c5, prop.c7, prop.cm), project: RadialDistortion.project } ];
+                    
+                    var cameraP = new PhotogrammetricCamera(focal, size, point, 0, disto);//, size, point, 0, [], 10, 10000); //, skew, distos, near, far);
+                    // We inject the name of the image in the camera attributes
+                    cameraP.name = url;
+
+                    // Extrinsec
+                    var quaternion = new THREE.Quaternion(prop.qx, prop.qy, prop.qz, prop.qw); // console.log(m.feature.vertices.slice(i * 3, i * 3 + 3));
+                    var pos = new THREE.Vector3().fromArray(m.feature.vertices.slice(i * 3, i * 3 + 3)); // console.log(pos); console.log(view.camera.camera3D.position); 
+                    cameraP.position.copy(pos);
+
+                    var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
+                    // var ENUQuat = itowns.OrientationUtils.quaternionFromAttitude({roll:0, pitch:0, heading:0}, coords, true);
+                    // quaternion.premultiply(ENUQuat);
+                     var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS("EPSG:2154", "EPSG:4978")(coords);
+                     quaternion.premultiply(quat_crs2crs);
+                    //var quatLocal = itowns.OrientationUtils.quaternionToCRS('EPSG:4978')(coords);
+                 //   quaternion.premultiply(itowns.OrientationUtils.quaternionToCRS('EPSG:2154')(coords));
+                 //   quaternion.premultiply(itowns.OrientationUtils.quaternionToCRS('EPSG:4978')(coords));
+                  
+                        // var ENUQuat = itowns.OrientationUtils.quaternionToGeocent()(coords);.
+                        // quaternion.premultiply(ENUQuat);
+                    cameraP.quaternion.copy(quaternion);
+                    
+                    //console.log('cameraP ', cameraP);
+                    
+                   // cameraP.updateMatrixWorld(true);
+                    //console.log(cameraP, "cameraPPPPPPPPPPPPPPPPPPPP ", m);
+                    if(url.includes("843")) {console.log("CAM 843: cameraP: ",cameraP, "prop: ", prop);
+                    url = "OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843FromMathieu.jpg";
+                    cameraP.name = url;
+                }
+
+                    // test to play with subcamera (crop bordersfor scan images)
+                   /* this.view = {
+                        enabled: false,
+                        offsetX: 0,
+                        offsetY: 0,
+                        width: size.x,
+                        height: size.y,
+                        fullWidth: size.x,
+                        fullHeight: size.y,
+                    };
+                    */
+                    cameraP.view.enabled = true;
+                    cameraP.view.offsetX = 300;
+                    cameraP.view.width = 3000;
+                    cameraP.view.fullWidth = 4300;
+                    createCameraHelper(cameraP);
+                    // m.add(sceneAllCams);
+                }
+                //m.add(sceneAllCams); 
+                console.log("m     :", m);
+                /*
+                handleOrientation(cameraP);
+                textureMaterial.map = pvaTexture;   // ! Dirty ! Asynchronous with camHelper creation...
+                textureMaterial.transparent = true;
+                */
+            }
+
+            function playWithProperties(properties){
+                console.log(properties);
+            }
+
             // Test with geoserver Mathieu
-            var wfsGeoserver = new itowns.WFSSource({
+            var wfsGeoserverSource = new itowns.WFSSource({
                 url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
-                version: '1.0.0',
+                protocol:'wfs',
+                version: '2.0.0',
                 typeName: 'alegoria%3Afrejus',
                 projection: 'EPSG:4326',
+                fetcher: itowns.Fetcher.json,
+                parser: itowns.GeoJsonParser.parse,
                 ipr: 'Alegoria',
                 format: 'json',
-                zoom: { min: 6, max: 15 },
+                zoom: { min: 10, max: 10 },
+                networkOptions: {crossOrigin: ''}
               
             });
 
             var wfsGeoserverLayer = new itowns.GeometryLayer('WFS Geoserver', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
-                    color: console.log("coooocooo"),
-                    batchId: function (property, featureId) { return featureId; },
-                    altitude: function(){console.log(altitudeeeeeeeee);},
-                    extrude: extrudeBuildings }),
-               
-                overrideAltitudeInToZero: true,
-                source: wfsGeoserver
+                    playWithProperties: playWithProperties,
+                    color: new itowns.THREE.Color() }),
+                onMeshCreated: function(mesh){workWithMesh(mesh);},//workWithMesh(mesh),
+                source: wfsGeoserverSource
+                
+
             });
             view.addLayer(wfsGeoserverLayer);
-*/
+
 
 
 
 
             var menuGlobe = new GuiTools('menuDiv', view);
-
-
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
@@ -382,8 +556,37 @@
                 }
 
                 // load3DModel();
+                sendWFST();
             });
 
+            function sendWFST(){
+
+                //var WFS = import('geojsonToWFST.js');
+                                
+                const nullIsland = {
+                    type: 'Feature',
+                    properties: {place_name: 'null island'},
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    id: 'feature_id'
+                }
+                const params = {geometry_name: 'geom', layer: 'my_lyr', ns: 'my_namespace'};
+
+                // create a stringified transaction inserting null island
+                console.log(WFS);
+                /*
+                new Transaction(
+                new Insert(nullIsland, params),
+                {
+                    nsAssignments: {
+                    my_namespace: 'https://example.com/namespace_defn.xsd'
+                    }
+                }
+                );
+                */
+            }
 
             // Picking on buildings
             function pickingBuildings(event) {
@@ -489,8 +692,10 @@
                 xmlhttp.send();
             }
             
+
             // Launch micmac computation
             function computeResection(event, imgName, show){
+                console.log("Computing resection of image: ", imgName);
                 currentImageName = imgName;
                 var xmlhttp;
                 if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -509,7 +714,14 @@
                 xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName, true);
                 xmlhttp.send();
             }
-            
+
+
+                        
+            // launch full pipeline
+            function computeResectionFullAuto(){
+                saveAsImageToServer();
+            }
+                            
 
             // Show oriented image using micmac aspro xml
             function showResection(){
@@ -543,7 +755,7 @@
             function cameraHelper(camera, mat) {
                 var wireMaterial = new THREE.MeshBasicMaterial( {color: Math.random() * 0XFFFFFF, wireframe: true} );
                 // create the group (looking at intrinsics only) that should be added to the camera frame.
-                var group = new THREE.Group();
+                var group = new THREE.Group(); console.log("camera.projectionMatrix", camera.projectionMatrix);
                 // place a frustum
                 {
                     m = new THREE.Matrix4().getInverse(camera.projectionMatrix);
@@ -561,7 +773,7 @@
                     geometry.addGroup(12, 6, 1);
                     // viewMaterials[camera.name] = new OrientedImageMaterial(viewMaterialOptions);
                     // viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
-                    mat.map = uvTexture;
+                    //mat.map = uvTexture;
                     var mesh = new THREE.Mesh( geometry, [wireMaterial, mat] );
                     mesh.scale.set(1000, 1000, 1000);
                     group.add(mesh);
@@ -577,7 +789,7 @@
 
 
             function setMaterial(material, camera) {
-                material.map =  uvTexture; //textures[camera.name] || uvTexture;
+                //material.map =  uvTexture; //textures[camera.name] || uvTexture;
                 camera.getWorldPosition(material.uvwPosition);
                 const m = new THREE.Matrix4().copy(camera.matrixWorldInverse);
                 m.setPosition({x:0,y:0,z:0});
@@ -597,7 +809,7 @@
 
             // function to handle micmac orientation file
             function handleOrientation(cam) {
-                console.log(cam);
+                 console.log("Handle Orientation of cam: ",cam);
                 // Ugly way, if currently shown and refine orientation we remove oriented cam and recreate all...
                 if(currentOrientationWorkedImage == currentImageName){
                     view.scene.remove(globalCurrentCamOriented);
@@ -606,53 +818,52 @@
                 currentOrientationWorkedImage = currentImageName;
                 //view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
                 arrDisplayedImages.push(cam);
+                /*
                 textureMaterial = new OrientedImageMaterial({
                     map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
                    // tDepth: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
                     opacity:currentOpacity,
                     transparent:true,
                 });
-            
-                setMaterial(textureMaterial, cam);
+                */
+                // Already set in case of DB WFS. We can set here the High Resolution image (TODO)
+                if(cam.name === ""){  // Old school XML
+                    setMaterial(textureMaterial, cam);
+                    camHelper = cameraHelper(cam, textureMaterial);
+                    var scale = currentDistance / 100;
+                    camHelper.scale.set(scale,scale,scale);
+                    cam.add(camHelper);
+                    cam.updateMatrixWorld();
+                    globalCurrentCamOriented = cam;
+                    view.scene.add(globalCurrentCamOriented);  
+                    // camera set from micmac orientation file
+                    camera = cam;
 
-                camHelper = cameraHelper(cam, textureMaterial);
-                var scale = currentDistance / 100;
-                camHelper.scale.set(scale,scale,scale);
-                cam.add(camHelper);
-                cam.updateMatrixWorld();
-                globalCurrentCamOriented = cam;
-                view.scene.add(globalCurrentCamOriented);  
-            // console.log(cam);
-                var pictureInfos = arrayImages[currentIndiceNav];
-                // camera set from micmac orientation file
-                camera = cam;
-                if(pictureInfos.plane == null){
-                    plane = setupPictureFromCamera(camera, '../data/' + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
-                    pictureInfos.plane = plane;
-                }else{
-                    plane = pictureInfos.plane;
+                }else{   // DB WFS
+                    globalCurrentCamOriented = cam;
+                    camera = cam;
                 }
-                plane.visible = false;
-/*
-                var p2 = plane.clone();
-                p2.position.multiplyScalar(1.0001);
-                p2.updateMatrixWorld();
-                view.scene.add(p2);
-*/
-                textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
+
+                var pictureInfos = arrayImages[currentIndiceNav];
+
+                // Dirty mod to handle previous version with the new DB WFS one
+                if(cam.name === ""){
+                    console.log("cam.name  null", cam);
+                    if(pictureInfos.plane == null){
+                        plane = setupPictureFromCamera(camera, '../data/' + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
+                        pictureInfos.plane = plane; console.log("picturesinfos.planeee: ", plane);
+                    }else{
+                        plane = pictureInfos.plane;
+                    }
+                    plane.visible = false;
+                    textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
+                }
+                
                 textureMaterial.transparent = true;
                 updateCamera();
 
                 view.camera.camera3D.updateProjectionMatrix();
-/*
-                var geometry = new itowns.THREE.SphereGeometry( 20, 16, 16 );
-                var sphere = new itowns.THREE.Mesh( geometry, textureMaterial);// textureMaterial);//new THREE.MeshBasicMaterial());
-                sphere.material.side = THREE.DoubleSide;
-                sphere.position.copy(cam.position.clone()); console.log(sphere.position);
-                sphere.updateMatrixWorld();
-                view.scene.add( sphere );
-                view.notifyChange();
-*/
+
                 // set GUI for oriented image
                 if(!orientedMenu){
                     orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 1, 1000);  
@@ -660,8 +871,33 @@
                 }
                 
                 view.notifyChange(view.camera.camera3D);
-                
             }
+
+
+            // Function that create cameraHelper with all the properties of the oriented image
+            // Picking on it to associate camera scene
+            function createCameraHelper(cam){
+
+                // Concerning the texture, Ideally we initiate with a low res (thumbnail) and then
+                // when the user chooses that camera it'll load HiRes. 
+                // Low res should be found using camera name + "lowres".jpg for example or more dynamically 
+                // using IIP Image jp2 multi res
+                var textureMaterialP = new OrientedImageMaterial({
+                    map: new itowns.THREE.TextureLoader().load(cam.name), // new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
+                    opacity:currentOpacity,
+                    transparent:true,
+                });
+            
+                setMaterial(textureMaterialP, cam);
+                var camHelper = cameraHelper(cam, textureMaterialP);
+                var scale = currentDistance / 100;
+                camHelper.scale.set(scale,scale,scale);
+                cam.add(camHelper);
+                cam.updateMatrixWorld();
+                sceneAllCams.add(cam);
+                // view.scene.add(cam);  
+            }
+
 
             // If no initial position passed in the URL we launch the first registered image
             if(! posInit){
@@ -674,11 +910,17 @@
             }
 
             function updatePlaneDistance(value) {
-                transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
+
+               // transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
                 currentDistance = value;
                 var scale = value / 100;
+
+
+/*
                 camHelper.scale.set(scale,scale,scale);
                 camHelper.updateMatrixWorld();
+*/
+                currentObjUnderMouse.scale.set(scale,scale,scale);
                 view.notifyChange(view.camera.camera3D);
                 //console.log(menuGlobe);
             }
@@ -687,7 +929,7 @@
             //    console.log(value, plane);
                 currentOpacity = value;
                 textureMaterial.transparent = true;
-                plane.material.opacity = value;
+                if(plane) plane.material.opacity = value;
                 textureMaterial.opacity = value;
                 view.notifyChange(view.camera.camera3D);
             }
@@ -713,21 +955,23 @@
                 for(var m in meshesForeverever)
                     meshesForeverever[m].material = textureMaterial;      
 
-                // Add background
-                var copyBackground = olayer.background.clone();
-                console.log(olayer);
-                copyBackground.material = textureMaterial; //new THREE.MeshBasicMaterial(); //textureMaterial;
-                copyBackground.position.addScalar(0.1);
-                copyBackground.updateMatrixWorld();
-                copyBackground.material.side = THREE.DoubleSide;
-                copyBackground.material.transparent = true;
-                copyBackground.material.opacity = 0.99;
-                console.log("copyyyy", copyBackground);
-                view.scene.add(copyBackground);
-                view.notifyChange();
+                // Add background for Street Level 
+                if(olayer){
+                    var copyBackground = olayer.background.clone();
+                    console.log(olayer);
+                    copyBackground.material = textureMaterial; //new THREE.MeshBasicMaterial(); //textureMaterial;
+                    copyBackground.position.addScalar(0.1);
+                    copyBackground.updateMatrixWorld();
+                    copyBackground.material.side = THREE.DoubleSide;
+                    copyBackground.material.transparent = true;
+                    copyBackground.material.opacity = 0.99;
+                    console.log("copyyyy", copyBackground);
+                    view.scene.add(copyBackground);
+                    view.notifyChange();
+            }
 
                  // set camera's layer to do not disturb the picking
-                 model.traverse(function _(obj) { obj.material = textureMaterial;}) //console.log(obj);  /*obj.layers.set(colladaID); */ });
+                 //  model.traverse(function _(obj) { obj.material = textureMaterial;}) //console.log(obj);  /*obj.layers.set(colladaID); */ });
 
             }
 
@@ -745,6 +989,7 @@
                 var obj7 = { far: farProj};
                 var obj8 = { parallax: 0.};
                 var obj9 = { activateStreetLevel: function(){ activateStreetLevel() }};
+                var obj10 = { resectionAuto: function(){ computeResectionFullAuto() }};
                 
                 navImageGUI.add(obj,'next');
                 navImageGUI.add(obj2,'projectOnBuildings');
@@ -755,6 +1000,7 @@
                 navImageGUI.add(obj7,'far', 8., 250.).onChange(function setFarValue(value){textureMaterial.uniforms.far.value = value; farProj = value; createDepthMap() ; view.notifyChange();});
                 navImageGUI.add(obj8,'parallax', 0., 1.).onChange(function setParallaxValue(value){textureMaterial.uniforms.parallax.value = value; view.notifyChange();});
                 navImageGUI.add(obj9,'activateStreetLevel');
+                navImageGUI.add(obj10,'resectionAuto');
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -786,7 +1032,7 @@
 
             function nextImage(){
                // meshesForeverever = [];
-                currentIndiceNav = (currentIndiceNav + 1) % arrayImages.length; console.log("currentIndiceNav ",currentIndiceNav);
+                currentIndiceNav = (currentIndiceNav + 1) % arrayImages.length; 
                 console.log('indice image: ', currentIndiceNav);
 
                 source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
@@ -821,7 +1067,7 @@
                 view.getLayerById('atmosphere').visible = false;
                 // Prepare oriented image source
                 var orientedImageSource = new itowns.OrientedImageSource({  
-                        url: 'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' //  // 2 Zero to remove 'CalibV4-140407_0566-{cameraId}-00008_0000{panoId}.jpg' // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' // 'Paris2015-150123_0593-{cameraId}-00004_0000{panoId}.jpg'//'Paris-150630_0723-{cameraId}-00005_0000{panoId}.jpg'  // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' 
+                        url:  '20150812-150812_0421-{cameraId}-00001_0000{panoId}.jpg'//'20150729-150729_0521-{cameraId}-00003_0000{panoId}.jpg' // 'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' // '20150729-150729_0521-{cameraId}-00005_0000{panoId}.jpg'// 'Paris2015-141106_0725-{cameraId}-00004_0000{panoId}.jpg' // Paris2015-141106_0725-00-00004_0000546 //'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' //  // 2 Zero to remove 'CalibV4-140407_0566-{cameraId}-00008_0000{panoId}.jpg' // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' // 'Paris2015-150123_0593-{cameraId}-00004_0000{panoId}.jpg'//'Paris-150630_0723-{cameraId}-00005_0000{panoId}.jpg'  // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' 
                     });
 
                 // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
@@ -910,7 +1156,7 @@
 
 
             function centerCameraStreetView(){
-                view.camera.camera3D.position.copy({x: 4199825.822840914, y: 172469.5643900863, z: 4781089.122163953}); //{x: 4200557.133126016, y: 172016.98119668392, z: 4780462.11547708});//{x: 4200012.882959826, y: 173338.79678516634, z: 4780896.915537954});//{x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});//{x: 4202444.187983729, y: 172504.46625564503, z: 4778798.559683817});//{x: 4199402.418293162, y: 170632.28074215917, z: 4781516.8235254865});//{x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});
+                view.camera.camera3D.position.copy({x: 4200418.678760414, y: 169697.9663647849, z: 4780662.507142361});//{x: 4199575.751513691, y: 170654.7421699525, z: 4781364.212254677});  //{x: 4199779.782905031, y: 171024.8334730191, z: 4781177.511110922}); // {x: 4199820.888875769, y: 171052.74504265454, z: 4781140.971902925}); //{x: 4199825.822840914, y: 172469.5643900863, z: 4781089.122163953}); //{x: 4200557.133126016, y: 172016.98119668392, z: 4780462.11547708});//{x: 4200012.882959826, y: 173338.79678516634, z: 4780896.915537954});//{x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});//{x: 4202444.187983729, y: 172504.46625564503, z: 4778798.559683817});//{x: 4199402.418293162, y: 170632.28074215917, z: 4781516.8235254865});//{x: 4200455.75402067, y: 173453.53384993714, z: 4780501.335775498});
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -1011,8 +1257,18 @@
 
         // SAVE THE DEPTH MAP FOR RE-USE AND OFFLINE USE 
         function saveDepthMap(){
-            
-            var img = view.mainLoop.gfxEngine.bufferToImage(target.depthBuffer, window.innerWidth, window.innerHeight);
+            target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
+            target.texture.format = THREE.RGBFormat;
+            target.texture.minFilter = THREE.NearestFilter;
+            target.texture.magFilter = THREE.NearestFilter;
+            target.texture.generateMipmaps = false;
+            target.stencilBuffer = false;
+            target.depthBuffer = true;
+            target.depthTexture = new THREE.DepthTexture();
+            target.depthTexture.type = THREE.UnsignedShortType;
+            view.mainLoop.gfxEngine.renderer.render( view.scene, view.camera.camera3D );
+
+            var img = view.mainLoop.gfxEngine.bufferToImage(target.texture, window.innerWidth, window.innerHeight);
             document.getElementById('miniDiv').appendChild(img);
             //console.log(target);
             /*
@@ -1024,10 +1280,127 @@
             */
                 
         }
+        
+        // Save scene to image in local
+        function saveAsImageLocally() {
+            var imgData, imgNode;
+            var strDownloadMime = "image/octet-stream";
+            try {
+                var strMime = "image/jpeg";
+                view.mainLoop.gfxEngine.renderView(view);
+                imgData = view.mainLoop.gfxEngine.renderer.domElement.toDataURL(strMime);
+                saveFile(imgData.replace(strMime, strDownloadMime), "test.jpg");
+            } catch (e) {
+                console.log(e);
+                return;
+            }
+        }
+
+        var saveFile = function (strData, filename) {
+            var link = document.createElement('a');
+            if (typeof link.download === 'string') {
+                document.body.appendChild(link); //Firefox requires the link to be in the body
+                link.download = filename;
+                link.href = strData;
+                link.click();
+                document.body.removeChild(link); //remove the link when done
+            } else {
+                location.replace(uri);
+            }
+        }
+
+
+        // Save scene to image on the server and launch AUTO REGISTRATION
+        function saveAsImageToServer() {
+            var imgData, imgNode;
+            var strDownloadMime = "image/octet-stream";
+            try {
+               // var strMime = "image/png";
+                view.mainLoop.gfxEngine.renderView(view);
+                imgData = view.mainLoop.gfxEngine.renderer.domElement.toDataURL("image/png");
+                var imgImportedName = document.getElementById('img').src.split('/').pop();
+                saveFileToServer(imgData, imgImportedName);
+            } catch (e) {
+                console.log(e);
+                return;
+            }
+        }
+
+        var saveFileToServer = function (strData, filename) {
+
+            $.ajax({
+                type: "POST",
+                url: "writeImageToServer.php",
+                data: { 
+                    imgBase64: strData,
+                    imgName: filename
+                }
+            }).done(function(response) {
+                console.log('saved: ' + response); 
+                // We can then reproject homologues points into the scene and launch Aspro!
+                readAppariement();
+            });
+
+        }
+
+        
+        // Function that reads appariement results and get 3D point and write both gcp.xml and appuis.xml
+        function readAppariement(){
+            // Default url for results: http://134.158.74.36/alegoriaX/src/pts_image1_image2.resultfiltre
+            jQuery.get('pts_image1_image2.resultfiltre', function(data) {
+                console.log(data);
+                arrAppariement = data.split(/\s+/);
+                console.log(arrAppariement);  // Xa0,Ya0,Xb0,Yb0,Xa1,Ya1,...,Xan,Yan,Xbn,Ybn
+
+                // We then launch the creation of the GCP and Appuis files
+                createHomologuePointFiles();
+            });
+
+        }
+
+       
+        // We reproject the 2D points homologues in the Scene to get 3D coordinates
+        function createHomologuePointFiles(){
+            for(var i = 0; i < arrAppariement.length -1; i+=4){
+                
+                var pScene = {x:Number(arrAppariement[i]), y: Number(arrAppariement[i + 1])};
+                var pPhoto = {x:Number(arrAppariement[i + 2]), y: Number(arrAppariement[i + 3])};
+                var pickBuilding = pickingBuildings(pScene);
+                var geoposition = new THREE.Vector3();
+                if(pickBuilding.z == 0){
+                    // get 3D coordinates on ground
+                    geoposition = view.controls.pickGeoPosition(new itowns.THREE.Vector2(pScene.x, pScene.y));
+                    // convert coordinates to geographic system
+                    if(typeof geoposition != "undefined"){
+                        var converted = geoposition.as('EPSG:4978'); // console.log(converted);
+                        //coordinates = converted._values;
+                        pickBuilding.x = converted.x;
+                        pickBuilding.y = converted.y;
+                        pickBuilding.z = converted.z;
+                    }
+                }
+                //if(pick)
+                console.log(pickBuilding, pScene);
+                if(pickBuilding.z !==0){
+                    show3DPicking(pickBuilding.x, pickBuilding.y, pickBuilding.z, ptname);
+                    // export 3D coordinates to an xml file
+                    export3Dcoord(ptname, pickBuilding.x, pickBuilding.y, pickBuilding.z);
+                    export2DCoord(ptname, pPhoto.x, pPhoto.y);
+                    ptname++;
+                }
+            }
+
+            // We can finally now launch Aspro
+            setTimeout(function() {   // Ugly timer cause src change/affectation takes time and no callback used
+                    computeResection({}, document.getElementById('img').src.split('/').pop(), true);
+                }, 650);
+            //computeResection({}, document.getElementById('img').src.split('/').pop(), false);
+        }
+
 
         function load3DModel(){
              // ThreeLoader can load each format proposed in ThreeJs examples loaders : https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
-              var promiseCollada = ThreeLoader.load('GLTF', 'repuStatue/scene.gltf')
+              var promiseCollada = ThreeLoader.load('GLTF', 'alexPont.glb')
                 .then(collada => {
                     model = collada.scene;
 
@@ -1061,7 +1434,90 @@
                 });
         }
 
-        /*********** Keyboard functions for preview of orientation ********************/
+        /*********** Keyboard/Mouse functions for preview of orientation ********************/
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+
+            function onMouseMove( event ) {
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                // update the picking ray with the camera and mouse position
+	            raycaster.setFromCamera( mouse, view.camera.camera3D );
+                // calculate objects intersecting the picking ray
+                var intersects = raycaster.intersectObjects(sceneAllCams.children, true);  // "true" for recursive raycast
+                for ( var i = 0; i < intersects.length; i++ ) {
+                    activateCamHelper(intersects[ i ].object.parent);
+                    firstMoveOut = true;
+                }
+                if (intersects.length == 0 && firstMoveOut && !scalingOffisOn){
+                    firstMoveOut = false;
+                    scalingOffCamHelpers();
+                }
+            }
+
+            function onMouseClick( event ){
+                var mouse = new THREE.Vector2();
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                // update the picking ray with the camera and mouse position
+	            raycaster.setFromCamera( mouse, view.camera.camera3D );
+                // calculate objects intersecting the picking ray
+                var intersects = raycaster.intersectObjects(sceneAllCams.children, true);  // "true" for recursive raycast
+                for ( var i = 0; i < intersects.length; i++ ) {
+                    
+                    // We put the scene camera like was the camera that took the selected photo
+                    console.log("cliiiick", intersects[ i ].object.parent);
+                    handleOrientation(intersects[ i ].object.parent.parent);
+                }
+            }
+
+            window.addEventListener( 'mousemove', onMouseMove, false );
+            window.addEventListener( 'click', onMouseClick, false);
+        
+
+            // Function to show dynamically the camHelper under the mouse
+            function activateCamHelper(obj){
+                currentObjUnderMouse = obj;  // console.log("undermouse: ",obj);
+                textureMaterial = obj.children[0].material[1];
+                scaleCamHelper();
+            }
+
+            function scaleCamHelper(){
+                
+               if(currentObjUnderMouse.scale.x < 10){
+                    currentObjUnderMouse.scale.addScalar(0.2);
+                    currentObjUnderMouse.updateMatrixWorld();
+                    view.notifyChange();
+                    requestAnimationFrame( scaleCamHelper );
+                }
+            }
+
+            function scalingOffCamHelpers(){ 
+                scalingOffisOn = true;
+                // console.log('scalingOff', nbToModify);
+                nbToModify = 0;
+
+                for(var i = 0; i < sceneAllCams.children.length; ++i){
+                    var o = sceneAllCams.children[i].children[0];
+                   if(o.scale.x > 1){
+                        o.scale.addScalar(-0.2);
+                        o.updateMatrixWorld();
+                        view.notifyChange();
+                        nbToModify = 1;
+                    }
+                }
+
+                if(nbToModify > 0){
+                    scaleOff = true;
+                    requestAnimationFrame( scalingOffCamHelpers );
+                }       
+                else{
+                    firstMoveOut = false; scaleOff = false; scalingOffisOn = false;
+                }
+
+            }
+            
+
             document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
                 if(keyName === 'r') {
@@ -1086,8 +1542,7 @@
                 }
             }, false);
 
-              /*********** Keyboard functions for preview of orientation ********************/
-              document.addEventListener('keydown', (event) => {
+            document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
                 if(keyName === 's') {
                     //saveDepthMap();
@@ -1095,12 +1550,29 @@
                 }
             }, false);
 
+            document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName === 'k') {
+                    //saveDepthMap();
+                    //saveAsImageLocally();
+                    saveAsImageToServer();
+                }
+            }, false);
+            
+            document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName === 'w') {
+                    //saveDepthMap();
+                    //saveAsImageLocally();
+                    readAppariement();
+                }
+            }, false);
+          
             
               /*********** Keyboard functions for preview of orientation ********************/
               document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
                 if(keyName === 'c') {
-                    //saveDepthMap();
                     centerCameraStreetView();
                 }
             }, false);
