@@ -104,10 +104,11 @@
         <script src="scene3dv2.js"></script>
         <script src="createCalibrationFile.js"></script>
         <script src="createMicmacChantierDescripteur.js"></script>
-  <!--      <script type="module"  src="geojsonToWFST.js"></script>-->
+        <!--      <script type="module"  src="geojsonToWFST.js"></script>   -->
         <script type="module">
-                import * as wfs from './geojsonToWFST.js'
-                console.log("WWWWWWWWWWWWWWWWW", wfs);
+/*
+                import {Transaction, Insert} from './geojsonToWFST.js'
+                console.log("WWWWWWWWWWWWWWWWW", Insert);
                 
                 const nullIsland = {
                     type: 'Feature',
@@ -118,28 +119,117 @@
                     },
                     id: 'feature_id'
                 };
-                const params = {geometry_name: 'geom', layer: 'my_lyr', ns: 'my_namespace'};
+                const params = {geometry_name: 'Point', layer: 'frejus', ns: 'my_namespace'};
 
                 // create a stringified transaction inserting null island
-                wfs.Transaction(
-                wfs.Insert(nullIsland, params),
-                {
-                    nsAssignments: {
-                    my_namespace: 'https://example.com/namespace_defn.xsd'
-                    }
-                }
-                );
+                var t = Transaction(
+                            Insert(nullIsland, params),
+                            {
+                                nsAssignments: {
+                                my_namespace: 'https://example.com/namespace_defn.xsd'
+                                }
+                            }
+                        );
 
+                console.log("my trannnnnssaction: ", t);
+
+                // Try sending the transaction to the WFS
+                var url = 'http://134.158.74.36:8080/geoserver/wfs';//'http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';
+                var data = t; // {username: 'example'};
+                var geometry = "63.00,23.00";         
+                var text = "";   
+                var data2 =
+                            '<wfs:Transaction >\
+                                <wfs:Insert>\
+                                    \
+                                        <frejus >\
+                                                <gml:Point>\
+                                                    <gml:pos>59.163182034 -133.844892907</gml:pos>\
+                                                </gml:Point>\
+                                        </frejus>\
+                                </wfs:Insert>\
+                            </wfs:Transaction>';
+
+                var data3 = '<wfs:Transaction service="WFS" version="1.0.0"\
+                                xmlns:wfs="http://www.opengis.net/wfs"\
+                                xmlns:topp="http://www.openplans.org/topp"\
+                                xmlns:gml="http://www.opengis.net/gml"\
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\
+                                xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd http://www.openplans.org/topp http://localhost:8080/geoserver/wfs/DescribeFeatureType?typename=frejus">\
+                                <wfs:Insert>\
+                                    <frejus>\
+                                        <point>\
+                                            <gml:Point srsName="http://www.opengis.net/gml/srs/epsg.xml#2154">\
+                                                <gml:coordinates xmlns:gml="http://www.opengis.net/gml" decimal="." cs="," ts=" ">1006332.0251744,6265444.41901179,1707.49806221</gml:coordinates>\
+                                            </gml:Point>\
+                                        </point>\
+                                        <name>\
+                                            OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0847\
+                                        </name>\
+                                        <qx>0.024954604088073</qx>\
+                                        <qy>-0.0164633484081821</qy>\
+                                        <qz>0.70036987414708</qz>\
+                                        <qw>0.713153745892988</qw>\
+                                        <fx>9926.45192303177</fx>\
+                                        <fy>9926.45192303177</fy>\
+                                        <px>4230.82980647978</px>\
+                                        <py>4362.90946742076</py>\
+                                        <sk>0.0</sk>\
+                                        <sx>8758</sx>\
+                                        <sy>8759</sy>\
+                                        <c3>3.64028615366262E-11</c3>\
+                                        <c5>-9.93412660878962E-19</c5>\
+                                        <c7>-3.68160968910613E-26</c7>\
+                                        <cm>1.51833873736678E8</cm>\
+                                        <cx>4230.82980647978</cx>\
+                                        <cy>4362.90946742076</cy>\
+                                    </frejus>\
+                                </wfs:Insert>\
+                                </wfs:Transaction>';
+
+
+
+                fetch(url, {
+                    method: 'POST', // or 'PUT'
+                    body: data3, // JSON.stringify(data), // data can be `string` or {object}!
+                    headers:{
+                        'Content-Type': 'application/json'
+                }
+                }).then(res => res.json())
+                .then(response => console.log('Success:', JSON.stringify(response)))
+                .catch(error => console.error('Error:', error));
+*/
+
+
+/*
+                 // Test with geoserver Mathieu
+            var wfsGeoserverSource = new itowns.WFSSource({
+                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                protocol:'wfs',
+                version: '2.0.0',
+                typeName: 'alegoria%3Afrejus',
+                projection: 'EPSG:4326',
+                fetcher: itowns.Fetcher.json,
+                parser: itowns.GeoJsonParser.parse,
+                ipr: 'Alegoria',
+                format: 'json',
+                zoom: { min: 10, max: 10 },
+                networkOptions: {crossOrigin: ''}
+              
+            });
+*/
+                /*
                 // create a stringified transaction updating null island's name
                 wfs.Transaction(
-                wfs.Update({properties: {place_name: 'not Atlantis'}, id: nullIsland.id }),
-                {nsAssignments: 'wao'}
+                    wfs.Update({properties: {place_name: 'not Atlantis'}, id: nullIsland.id }),
+                    {nsAssignments: 'wao'}
+                    )
+                    // same deal, but deleting it
+                    wfs.Transaction(
+                    wfs.Delete({id: nullIsland.id}, params),
+                    {nsAssignments: 'wao'}
                 )
-                // same deal, but deleting it
-                wfs.Transaction(
-                wfs.Delete({id: nullIsland.id}, params),
-                {nsAssignments: 'wao'}
-                )
+                */
          </script>
        
         <script type="text/javascript">
@@ -156,6 +246,7 @@
             var urlpage = new URL(location);
             var imName = urlpage.searchParams.get("imgname");
             var posInit = urlpage.searchParams.get("pos");
+            var wfsInURL = urlpage.searchParams.get("wfs");
             if(posInit) posInit = posInit.split(",");
             //console.log(imName, "  ", posInit);
 
@@ -182,7 +273,7 @@
                     transparent:true,
                 });
             var currentOpacity = 1;
-            var currentDistance = 100;
+            var currentDistance = 350;
             var arrDisplayedImages = [];
             var meshesForeverever = [];
             var previewOn = false;
@@ -198,33 +289,39 @@
             var scaleOff = false;
             var nbToModify = 0;  // Ugly init for animation
             var scalingOffisOn = false;
+            var lowResValue = 128;
+            var highResValue = 2048;
+            var arrLoadedCameraNames = [];
+            var previewModeOn = false;  // To handle the loading of super low resolution image like 128*128
+            var mouseDown = false;
+            var positionMouseDown = new THREE.Vector2();
             // var arrAppariementScene = [];
             // var arrAppariementOld = [];
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
-            arrayImages = [{image: 'LOC-04753X.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'notredame.jpg', distance: 200, opacity: 1, plane:null},
+            arrayImages = [{image: 'LOC-04753X.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'notredame.jpg', distance: 350, opacity: 1, plane:null},
             {image: 'rueVieilleDuTemple8.jpg', distance: 600, opacity: 1, plane:null},
-            {image: 'planNotreDame.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'plandetailleCite.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'pontlouisphilippe.jpg', distance: 200, opacity: 1, plane:null},
-            {image: '1919_CAF_C-1_0012.jpg', distance: 200, opacity: 1, plane:null}, 
-            {image: '1951_DUR_208_0007.jpg', distance: 200, opacity: 1, plane:null},
-            {image: '1951_DUR_214_0024.jpg', distance: 200, opacity: 1, plane:null}, 
-            {image: '1951_DUR_214_0022.jpg', distance: 200, opacity: 1, plane:null},
-            {image: '1919_CAF_Z-36_0008.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'trocadero2.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'FRAN_0207_3299_L.jpg', distance: 200, opacity: 1, plane:null},
-            {image: 'FRAN_0207_0648_L.jpg', distance: 200, opacity: 1, plane:null}];
+            {image: 'planNotreDame.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'plandetailleCite.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'pontlouisphilippe.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1919_CAF_C-1_0012.jpg', distance: 350, opacity: 1, plane:null}, 
+            {image: '1951_DUR_208_0007.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1951_DUR_214_0024.jpg', distance: 350, opacity: 1, plane:null}, 
+            {image: '1951_DUR_214_0022.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1919_CAF_Z-36_0008.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'trocadero2.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'FRAN_0207_3299_L.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'FRAN_0207_0648_L.jpg', distance: 350, opacity: 1, plane:null}];
             if(imName !== null)
-                arrayImages.unshift(  {image: imName, distance: 100, opacity: 1, plane:null} );
+                arrayImages.unshift(  {image: imName, distance: 350, opacity: 1, plane:null} );
             
             // Define initial camera position  // 43.9542987,6.5115427 44.1751125,6.3516113,222m 44.1748836,6.3511125
             // var positionOnGlobe = { longitude: 2.3186303566461626, latitude: 48.86426741804917, altitude: 188.94939874485135 };
             // 42.7211829,1.8392353
-            // 48.8365154,-3.3129326 ( rocher de la sentinelle)
-            var positionOnGlobe = { longitude:2.3186303566461626, latitude: 48.86426741804917, altitude: 1878.615379151888 };
+            // 48.8365154,-3.3129326 ( rocher de la sentinelle)   // fprca: 43.9595975,5.7772372,
+            var positionOnGlobe = { longitude:5.7772372, latitude: 43.9595975, altitude: 1878.615379151888 };
             if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
             //console.log(positionOnGlobe);
             //var miniView;
@@ -389,18 +486,24 @@
             // Load image and project it on the ground using the image properties
             function workWithMesh(m){
 
+
                 //console.log(m);
-                m.material.size = 100;
+                m.material.size = 25;
                 for (var i = 0; i < m.feature.geometry.length; ++i){
                     // Let's download the image
                     var prop = m.feature.geometry[i].properties;
                     var imgName = prop.name;
+                    
+                    // We check if already image displayed we don't treat it
+                    if(arrLoadedCameraNames.includes(imgName)) return 0;
+
+                    arrLoadedCameraNames.push(imgName);
                     //https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/2324-0191/IGNF_PVA_1-0__1947-04-10__C2324-0191_1947_CDP2368_0002.jp2&LYR=20&WID=200&CVT=JPEG
-                    var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&LYR=20&WID=1024&CVT=JPEG';
+                    var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
                     //url = "IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826_xs.jpg";  // temp for test
                     //console.log(url);
                     // Temp to test with cropped image (Giordano)
-                  //  if(url.includes("843"))
+                    //  if(url.includes("843"))
                      //   url ="http://134.158.74.36/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
 
                     // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
@@ -416,8 +519,17 @@
                     //[ 9100, 9500 ]; //prop.px * 2, prop.py * 2];
                     var point = [ prop.px, prop.py ];
                     var disto = [ { type: "ModRad", C: new THREE.Vector2(prop.cx, prop.cy), R: new THREE.Vector4(prop.c3, prop.c5, prop.c7, prop.cm), project: RadialDistortion.project } ];
-                    
-                    var cameraP = new PhotogrammetricCamera(focal, size, point, 0, disto);//, size, point, 0, [], 10, 10000); //, skew, distos, near, far);
+                    var imageMatrix = new THREE.Matrix4();
+                    if(prop.m00 != undefined){  // If there are some Crop Infos, we set the image matrix (not identity)
+                        imageMatrix.elements[0]  = prop.m00;
+                        imageMatrix.elements[1]  = prop.m01;
+                        imageMatrix.elements[4]  = prop.m10;
+                        imageMatrix.elements[5]  = prop.m11;
+                        imageMatrix.elements[12] = prop.m20;
+                        imageMatrix.elements[13] = prop.m21;
+                    }
+                    console.log(imageMatrix);
+                    var cameraP = new PhotogrammetricCamera(focal, size, point, 0, disto, undefined, undefined, undefined, imageMatrix );//, size, point, 0, [], 10, 10000); //, skew, distos, near, far);
                     // We inject the name of the image in the camera attributes
                     cameraP.name = url;
 
@@ -459,10 +571,12 @@
                         fullHeight: size.y,
                     };
                     */
-                    cameraP.view.enabled = true;
-                    cameraP.view.offsetX = 300;
-                    cameraP.view.width = 3000;
-                    cameraP.view.fullWidth = 4300;
+                   /*
+                        cameraP.view.enabled = true;
+                        cameraP.view.offsetX = 300;
+                        cameraP.view.width = 3000;
+                        cameraP.view.fullWidth = 4300;
+                    */
                     createCameraHelper(cameraP);
                     // m.add(sceneAllCams);
                 }
@@ -484,7 +598,7 @@
                 url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
                 protocol:'wfs',
                 version: '2.0.0',
-                typeName: 'alegoria%3Afrejus',
+                typeName: wfsInURL || 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
                 projection: 'EPSG:4326',
                 fetcher: itowns.Fetcher.json,
                 parser: itowns.GeoJsonParser.parse,
@@ -502,12 +616,8 @@
                     color: new itowns.THREE.Color() }),
                 onMeshCreated: function(mesh){workWithMesh(mesh);},//workWithMesh(mesh),
                 source: wfsGeoserverSource
-                
-
             });
             view.addLayer(wfsGeoserverLayer);
-
-
 
 
 
@@ -556,7 +666,7 @@
                 }
 
                 // load3DModel();
-                sendWFST();
+                //sendWFST();
             });
 
             function sendWFST(){
@@ -648,7 +758,7 @@
             // Draw a sphere to show where the 3D picking has been done
             function show3DPicking(x,y,z, iteration){
 
-                var geometry = new itowns.THREE.SphereGeometry( 0.1, 16, 16 );
+                var geometry = new itowns.THREE.SphereGeometry( 0.8, 16, 16 );
                 var col = new itowns.THREE.Color(0XFFFF00);
                 var material = new itowns.THREE.MeshBasicMaterial( {color: col.lerpHSL(new itowns.THREE.Color(0XFF0000), (iteration % 8) / 7), transparent:true, opacity:0.8} );
                 var sphere = new itowns.THREE.Mesh( geometry, material );
@@ -775,7 +885,7 @@
                     // viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
                     //mat.map = uvTexture;
                     var mesh = new THREE.Mesh( geometry, [wireMaterial, mat] );
-                    mesh.scale.set(1000, 1000, 1000);
+                    mesh.scale.set(200, 200, 200);
                     group.add(mesh);
                 }
                 // place a sphere at the camera center
@@ -802,6 +912,40 @@
                     material.uvDistortion.R.w = Infinity;
                 }
             }
+
+            // Uncomment playvideo
+            function playVideo(){
+
+                var videoName =  "../data/pontneufCropped.mp4"; //pictureInfos.image;
+                var x = document.createElement("VIDEO");
+                x.setAttribute("id", "video");
+                if (x.canPlayType("video/mp4")) {
+                    x.setAttribute("src",videoName);
+                } 
+                x.setAttribute("width", "840");
+                x.setAttribute("height", "700");
+                x.setAttribute("controls", "controls");
+                document.body.appendChild(x);
+                var video = document.getElementById( 'video' );
+     //video.play();
+                var texture = new THREE.VideoTexture( video );  console.log(video, texture);
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.format = THREE.RGBFormat;
+                textureMaterial.map = texture;
+                updateRenderingAlwaysForVideo();
+
+                // Faisceaux
+                showFaisceaux();
+            }
+
+            
+            function updateRenderingAlwaysForVideo(){
+
+                view.notifyChange();
+                requestAnimationFrame( updateRenderingAlwaysForVideo );
+
+             };
 
 
             const uvTexture = new itowns.THREE.TextureLoader().load('../data/uv.jpg');
@@ -857,6 +1001,20 @@
                     }
                     plane.visible = false;
                     textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
+                }else{  // WFS Mode
+                    // We update the image with a bigger resolution
+                    console.log("cam.namecam.namecam.namecam.name: ",cam.name);
+                    cam.name =  cam.name.replace("WID=" + lowResValue, "WID=" + highResValue);
+                    textureMaterial.map = new itowns.THREE.TextureLoader().load(cam.name);
+                    /*
+                    var textureMaterialP = new OrientedImageMaterial({
+                        map: new itowns.THREE.TextureLoader().load(cam.name), // new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
+                        opacity:currentOpacity,
+                        transparent:true,
+                    });
+            
+                    setMaterial(textureMaterialP, cam);
+                    */
                 }
                 
                 textureMaterial.transparent = true;
@@ -866,7 +1024,7 @@
 
                 // set GUI for oriented image
                 if(!orientedMenu){
-                    orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 1, 1000);  
+                    orientedImageGUI = setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, updatePlaneOpacity, updateZoom, view, 150, 1000);  
                     orientedMenu = true; 
                 }
                 
@@ -990,6 +1148,7 @@
                 var obj8 = { parallax: 0.};
                 var obj9 = { activateStreetLevel: function(){ activateStreetLevel() }};
                 var obj10 = { resectionAuto: function(){ computeResectionFullAuto() }};
+                var obj11 = { activateVideo: function(){ playVideo() }};
                 
                 navImageGUI.add(obj,'next');
                 navImageGUI.add(obj2,'projectOnBuildings');
@@ -1001,6 +1160,7 @@
                 navImageGUI.add(obj8,'parallax', 0., 1.).onChange(function setParallaxValue(value){textureMaterial.uniforms.parallax.value = value; view.notifyChange();});
                 navImageGUI.add(obj9,'activateStreetLevel');
                 navImageGUI.add(obj10,'resectionAuto');
+                navImageGUI.add(obj11,'activateVideo');
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -1191,6 +1351,147 @@
                 }
             }
 
+
+        // Dirty little functions to show rays from ground points to camera through image
+        function showFaisceaux(){
+            var source = new FetchSource('../data/');
+            
+            source.open('MesuresAppuis-S2D.xml', 'text').then(
+                function(data){
+                    parser = new DOMParser();
+                    xmlDoc = parser.parseFromString(data,"text/xml");
+                    var g = xmlToJson(xmlDoc);//JSON.stringify(data));
+                    console.log(g);
+                    
+                    // We load the second file of ground points
+                    var sourceG = new FetchSource('../data/');
+                    sourceG.open('appuis.xml', 'text').then(
+                        function(dataG){
+                            xmlDocG = parser.parseFromString(dataG,"text/xml");
+                            var g2 = xmlToJson(xmlDocG);//JSON.stringify(data));
+                            console.log(g2);
+                            
+                            // We draw spheres on points appuis
+                            var pG = g2.DicoAppuisFlottant.OneAppuisDAF;
+                            for(var i = 0; i < pG.length; ++i){
+                                var imageNameCurrent = "";
+                                var coordAssociatedCamera;
+                                var pos = pG[i].Pt["#text"].split(" "); //.split(" ");
+                                //console.log(pos);
+                                var coord = new itowns.Coordinates('EPSG:2154', parseFloat(pos[0]), parseFloat(pos[1]), parseFloat(pos[2]));
+                                var coordInSys = coord.as(view.referenceCrs);
+                                //  console.log(pos, coordInSys);
+                                var namePt = pG[i].NamePt["#text"];
+                               // console.log(namePt);
+                                
+                                var mesAppuis = g.SetOfMesureAppuisFlottants.MesureAppuiFlottant1Im;
+                                for(var j =0; j < mesAppuis.length; ++j){
+                                    //console.log(mesAppuis[j]);
+                                    var keys = Object.keys( mesAppuis[j].NameIm );
+                                    var nameImage2 = mesAppuis[j].NameIm[keys[0]];//mesAppuis[j].NameIm;
+
+                                    // When we encounter the good id of ground point we save image name and look the the right camera
+                                    var allMeasures = mesAppuis[j].OneMesureAF1I;
+                                    for(var k = 0; k < allMeasures.length; ++k){
+                                        var namePtLocal = allMeasures[k].NamePt["#text"];
+                                        //console.log(namePtLocal);
+                                        if(namePtLocal == namePt){
+                                            imageNameCurrent = nameImage2;
+                                           // console.log("imageNameCurrent",imageNameCurrent);
+                                            var cutNameCurrent = imageNameCurrent.substring(imageNameCurrent.indexOf(".tif") -12, imageNameCurrent.indexOf(".tif") );
+                                            // We then need to associate the good camera
+                                            var sceneCAMS = sceneAllCams.children;
+                                            for(var z = 0; z < sceneCAMS.length; ++z){
+                                                //console.log("sceneCAMS.name", sceneCAMS[z].name);
+                                                var cutName = sceneCAMS[z].name.substring(sceneCAMS[z].name.indexOf(".jp2") -12, sceneCAMS[z].name.indexOf(".jp2") );
+                                                //console.log(cutName);
+                                                if (cutName == cutNameCurrent){
+                                                    coordAssociatedCamera = sceneCAMS[z].position;
+                                                    console.log("aaaaaaaaaaaaaaaaaaaaaaa", cutName, coordAssociatedCamera);
+                                                }
+                                                
+                                            }
+                                        }
+                                    }
+
+                                    //console.log(nameImage2);
+                                }
+                                // Super ugly: we now look to associate the namePT tothe image in the previous xml loaded
+
+                                // position of cam for ray: coordAssociatedCamera
+
+                                // Draw sphere at pos
+                                var geometry = new itowns.THREE.SphereGeometry( 10, 6, 6 );
+                                var col = new itowns.THREE.Color(0XFFFF00);
+                                var material = new itowns.THREE.MeshBasicMaterial( {color: new itowns.THREE.Color(0XFF0000), transparent:true, opacity:0.8} );
+                                var sphere = new itowns.THREE.Mesh( geometry, material );
+                                sphere.position.set(coordInSys.x, coordInSys.y, coordInSys.z); //console.log(sphere.position);
+                                sphere.updateMatrixWorld();
+                                view.scene.add( sphere );
+
+
+                                // RAY
+                                var material = new THREE.LineBasicMaterial({
+                                    color: 0x0000ff
+                                });
+
+                                var geometry = new THREE.Geometry();
+                                geometry.vertices.push(
+                                    coordAssociatedCamera,
+                                    sphere.position
+                                );
+
+                                var line = new THREE.Line( geometry, material );
+                                view.scene.add( line );
+                    
+                                
+                            }
+                            view.notifyChange();
+                        }
+                    );
+                }
+            );
+            console.log("sceneAllCams", sceneAllCams);
+        }
+
+        // Changes XML to JSON
+            function xmlToJson(xml) {
+                
+                // Create the return object
+                var obj = {};
+
+                if (xml.nodeType == 1) { // element
+                    // do attributes
+                    if (xml.attributes.length > 0) {
+                    obj["@attributes"] = {};
+                        for (var j = 0; j < xml.attributes.length; j++) {
+                            var attribute = xml.attributes.item(j);
+                            obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+                        }
+                    }
+                } else if (xml.nodeType == 3) { // text
+                    obj = xml.nodeValue;
+                }
+
+                // do children
+                if (xml.hasChildNodes()) {
+                    for(var i = 0; i < xml.childNodes.length; i++) {
+                        var item = xml.childNodes.item(i);
+                        var nodeName = item.nodeName;
+                        if (typeof(obj[nodeName]) == "undefined") {
+                            obj[nodeName] = xmlToJson(item);
+                        } else {
+                            if (typeof(obj[nodeName].push) == "undefined") {
+                                var old = obj[nodeName];
+                                obj[nodeName] = [];
+                                obj[nodeName].push(old);
+                            }
+                            obj[nodeName].push(xmlToJson(item));
+                        }
+                    }
+                }
+                return obj;
+            };
 
 
         // Create depth map for registered images
@@ -1463,16 +1764,32 @@
 	            raycaster.setFromCamera( mouse, view.camera.camera3D );
                 // calculate objects intersecting the picking ray
                 var intersects = raycaster.intersectObjects(sceneAllCams.children, true);  // "true" for recursive raycast
+                if (intersects.length && intersects.length > 0){
+                    // We put the scene camera like was the camera that took the selected photo
+                    console.log("cliiiick", intersects[ 0 ].object.parent);
+                    handleOrientation(intersects[ 0 ].object.parent.parent);
+                }
+                /*
                 for ( var i = 0; i < intersects.length; i++ ) {
                     
                     // We put the scene camera like was the camera that took the selected photo
                     console.log("cliiiick", intersects[ i ].object.parent);
                     handleOrientation(intersects[ i ].object.parent.parent);
                 }
+                */
             }
 
             window.addEventListener( 'mousemove', onMouseMove, false );
-            window.addEventListener( 'click', onMouseClick, false);
+            window.addEventListener('mousedown', e => {
+                positionMouseDown = new THREE.Vector2(e.clientX, e.clientY); 
+                mouseDown = true;
+            });
+            window.addEventListener('mouseup', e => {
+                mouseDown = false;
+                if(positionMouseDown.distanceTo(new THREE.Vector2(e.clientX, e.clientY)) < 2)
+                    onMouseClick(e);
+            });
+           //  window.addEventListener( 'click', onMouseClick, false); // No more to avoid drag click
         
 
             // Function to show dynamically the camHelper under the mouse
@@ -1485,7 +1802,7 @@
             function scaleCamHelper(){
                 
                if(currentObjUnderMouse.scale.x < 10){
-                    currentObjUnderMouse.scale.addScalar(0.2);
+                    currentObjUnderMouse.scale.addScalar(0.4);
                     currentObjUnderMouse.updateMatrixWorld();
                     view.notifyChange();
                     requestAnimationFrame( scaleCamHelper );
@@ -1500,7 +1817,7 @@
                 for(var i = 0; i < sceneAllCams.children.length; ++i){
                     var o = sceneAllCams.children[i].children[0];
                    if(o.scale.x > 1){
-                        o.scale.addScalar(-0.2);
+                        o.scale.addScalar(-0.4);
                         o.updateMatrixWorld();
                         view.notifyChange();
                         nbToModify = 1;

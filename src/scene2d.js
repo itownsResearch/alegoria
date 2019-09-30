@@ -104,3 +104,68 @@ function getImgCoordOnClick(event){
 }
 
 
+
+function export2DCoord(ptname,x,y){
+
+    
+    image_rendwidth = image.offsetWidth; //div width
+    image_rendheight =  image.offsetHeight; //div height
+    image_offsetLeft = div.offsetLeft; 
+    image_offsetTop = div.offsetTop;
+    /*A function that translates the user clicks into a 2D image position,
+    then it stores the 2D coordinates in an xml file fitting the MicMac format*/
+   
+    console.log(image.naturalWidth, image.offsetWidth);
+    //getting real image coordinates pointed at
+    var cursor_x = event.pageX;
+    var cursor_y = event.pageY;
+    var pos_x = x; //(cursor_x - image_offsetLeft + 0.5) * image_width / image_rendwidth;
+    var pos_y = y; //(cursor_y - image_offsetTop + 0.5) * image_height / image_rendheight;
+    var point = document.createElement("img");
+    //display a cross on click
+    point.setAttribute('src', "../data/cross.png");
+    point.setAttribute('style',"position:absolute;visibility:hidden;z-index:20;width:10px;height:10px");
+    document.body.appendChild(point);
+    //   miniDiv.appendChild(point);
+    //  miniDiv.insertBefore(point, img);
+    //get center of the cross
+    point.style.left = cursor_x - point.offsetWidth / 2; // + "px";
+    point.style.top =  cursor_y - point.offsetHeight / 2;// + "px";
+    point.style.visibility = "visible" ;
+    //display coordinates in the console
+    console.log("X: " + x + " Y: " + y);
+    //updating the xml document with the new 2D coordinates
+    var subElement2 = xmlDoc.createElement('OneMesureAF1I');
+    //point name
+    var subElement3 = xmlDoc.createElement('NamePt');
+    subElement3.textContent = i;
+    //2D coordinates
+    var subElement4 = xmlDoc.createElement('PtIm');
+    subElement4.textContent = x + ' ' + y;  
+    element1.appendChild(subElement2);
+    subElement2.appendChild(subElement3);
+    subElement2.appendChild(subElement4);
+    //increase point number on click
+    i += 1;
+    // creating XMLhttpRequest object
+    var xhr;
+    if (window.XMLHttpRequest) { // Mozilla, Safari, ...
+        xhr = new XMLHttpRequest();
+    } else if (window.ActiveXObject) { // IE 8 and older
+            xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        //php script to write the xml file
+        var url = "fetch2dcoord.php";
+
+        //open a connection to the server
+        xhr.open("POST", url, true);
+
+        //declaring that the data being sent is in XML format
+        xhr.setRequestHeader("Content-Type", "text/xml");
+
+        //send the request
+        xhr.send(xmlDoc);
+    
+}
+

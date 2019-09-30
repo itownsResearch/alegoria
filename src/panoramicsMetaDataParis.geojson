@@ -1,6 +1,90 @@
 {
     "type": "FeatureCollection",
     "features": [
+                       {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    649637.31,
+                    6862902.52,
+                    34.92
+                ]
+            },
+            "properties": {
+                "id": 156,
+                "easting": 649637.31,
+                "northing": 6862902.52,
+                "altitude": 37.14,
+                "heading": 184.924576,
+                "roll": 1.259774,
+                "pitch": 1.319857,
+                "date": "2014-06-16T12:31:34.841Z"
+            }
+        },
+               {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    650636.47,
+                    6863960.62,
+                    34.92
+                ]
+            },
+            "properties": {
+                "id": 845,
+                "easting": 650636.47,
+                "northing": 6863960.62,
+                "altitude": 34.95,
+                "heading": 280.455261,
+                "roll": 1.187042,
+                "pitch": -0.254660,
+                "date": "2014-06-16T12:31:34.841Z"
+            }
+        },
+                   {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    650995.47,
+                    6863669.90,
+                    38.27
+                ]
+            },
+            "properties": {
+                "id": 546,
+                "easting": 650995.47,
+                "northing": 6863669.90,
+                "altitude": 38.27,
+                "heading": 73.587250,
+                "roll": -1.950216,
+                "pitch": -0.031746,
+                "date": "2014-06-16T12:31:34.841Z"
+            }
+        },
+           {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    651021.21,
+                    6863613.86,
+                    38.51
+                ]
+            },
+            "properties": {
+                "id": 410,
+                "easting": 651021.21,
+                "northing": 6863613.86,
+                "altitude": 38.51,
+                "heading": 255.103149,
+                "roll": 0.609561,
+                "pitch":0.161702,
+                "date": "2014-06-16T12:31:34.841Z"
+            }
+        },    
           {
             "type": "Feature",
             "geometry": {
