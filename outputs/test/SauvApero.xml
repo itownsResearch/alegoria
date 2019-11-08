@@ -10,7 +10,7 @@
      <SectionBDD_Observation>
           <BDD_ObsAppuisFlottant>
                <Id>Id-Appui</Id>
-               <KeySetOrPat>appuis_ROL-51276_2.xml</KeySetOrPat>
+               <KeySetOrPat>appuis_pontNeuf.xml</KeySetOrPat>
                <AcceptNoGround>true</AcceptNoGround>
           </BDD_ObsAppuisFlottant>
      </SectionBDD_Observation>
@@ -30,7 +30,7 @@
                </CalibPerPose>
           </CalibrationCameraInc>
           <PoseCameraInc>
-               <PatternName>ROL-51276_2.jpg</PatternName>
+               <PatternName>pontNeuf.jpg</PatternName>
                <CalcNameCalib>GenerateKC-Others</CalcNameCalib>
                <PosValueInit>
                     <PosFromBDAppuis>
@@ -41,7 +41,7 @@
           </PoseCameraInc>
           <PointFlottantInc>
                <Id>Id-Appui</Id>
-               <KeySetOrPat>gcp_ROL-51276_2.xml</KeySetOrPat>
+               <KeySetOrPat>gcp_pontNeuf.xml</KeySetOrPat>
           </PointFlottantInc>
      </SectionInconnues>
      <SectionChantier>

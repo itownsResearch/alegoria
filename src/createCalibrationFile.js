@@ -22,7 +22,7 @@ function createCalib(){
     //initializing the xml document(appuis.xml)
     xmlDocCalib = document.implementation.createDocument(null, 'ExportAPERO', null);
     element1Calib = xmlDocCalib.createElement('CalibrationInternConique');
-
+ 
 
     subElementName = xmlDocCalib.createElement('NameIn');
     subElementName.textContent = imageXX.src.replace(/^.*[\\\/]/, '');
@@ -54,7 +54,6 @@ function createCalib(){
     var subsubsubElement5 = xmlDocCalib.createElement('CDist');
     subsubsubElement5.textContent = imageXX_width/2 + ' '+ imageXX_height/2;
     subsubElement5.appendChild(subsubsubElement5);
-
 
             
     var xhrC;

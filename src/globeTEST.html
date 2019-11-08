@@ -1,0 +1,339 @@
+<html>
+    <head>
+        <title>Itowns - Globe</title>
+
+        <style type="text/css">
+            #miniDiv {
+                display: block;
+                margin-bottom: 20px;
+                margin-right: 20px;
+                position: absolute;
+                left: 20;
+                bottom: 0;
+                color: white;
+            }
+            #info {
+                color: black;
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                margin-right: 15px;
+                padding: 0.3rem;
+                background-color: rgba(255, 255, 255, 0.493);
+                border: 2px solid black;
+                border-radius: 5px;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 11px;
+            }
+            .styleForm {
+                text-align: center;
+                display: block;
+                margin-top: 00px;
+                margin-left: 20px;
+                position: absolute;
+                color: black;
+                font-family: 'Open Sans',
+                sans-serif;
+                font-size: 12px;
+                left: 0;
+                bottom: 10;
+            }
+            .buttonX {
+                background-color: #4CAF50; /* Green */
+                border: none;
+                color: white;
+                padding: 4px 4px;
+                text-align: center; 
+                text-decoration: none;
+                display: inline-block;
+                font-size: 12px;
+                bottom: 0;
+            }
+            p { background-color:#FFFFFF; 
+                color: black;
+            }
+
+            .imageholder{
+                position: relative;
+                float: right;
+                vertical-align: middle;
+                bottom: 10;
+                left: 4;
+            }
+            
+        </style>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/example.css">
+        <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="scene2d.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+        <script src="../../itowns/examples/js/OrientedImageHelper.js"></script>
+        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+        
+    </head>
+    <body>  
+
+        <div id="viewerDiv">        
+                <p id="info">
+                        <img id="imgLogo" src="../data/logoAlegoria.jpg" onmousedown="getImgCoordOnClick(event)">
+                        <br> 
+                        <a href="http://www.archives-nationales.culture.gouv.fr/" target="_blank"> Images: Archives Nationales </a>
+                </p>
+            <!-- span class="divScaleWidget"> Scale </span>  -->
+            <div id="miniDiv">
+                <img id="img"  onmousedown="getImgCoordOnClick(event)">
+            </div>
+        </div>
+
+        <form class="styleForm" method="post" enctype="multipart/form-data">
+            <input type="file" name="files[]" multiple>
+            <input type="submit" value="Upload File" name="submit">
+            <p  class="imageholder" id="countPoints"> Points registered: 0</p>
+            <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
+        </form>
+
+        
+        <script src="../../itowns/examples/js/GUI/GuiTools.js"></script>
+        <script src="../../itowns/dist/itowns.js"></script>
+        <script src="../../itowns/examples/js/GUI/LoadingScreen.js"></script>
+        <script src="../../photogrammetric-camera/dist/three-photogrammetric-camera.js"></script>
+    <!--    <script src="../../itowns/examples/js/ThreeLoader.js"></script>   -->
+        <script src="../../itowns/dist/debug.js"></script>
+        <!--    <script src="../../itowns/examples/js/proj4defs/2154.js"></script> -->
+
+
+        <script src="scene2d.js"></script>
+        <script src="scene3dv2.js"></script>
+        <script src="createCalibrationFile.js"></script>
+        <script src="createMicmacChantierDescripteur.js"></script>
+
+
+        <script type="text/javascript">
+            
+            // THREE photogrammetric camera variables
+            var PhotogrammetricCamera = ThreePhotogrammetricCamera.PhotogrammetricCamera; //three-photogrammetric-camera.PhotogrammetricCamera;
+            var MicmacOrientationParser = ThreePhotogrammetricCamera.MicmacOrientationParser;
+            var FetchSource = ThreePhotogrammetricCamera.FetchSource;
+            var OrientedImageMaterial = ThreePhotogrammetricCamera.OrientedImageMaterial;
+            var RadialDistortion = ThreePhotogrammetricCamera.RadialDistortion;
+            var THREE = ThreePhotogrammetricCamera.THREE; // itowns.THREE;
+
+
+            // Get possible parameters from url like imagename
+            var urlpage = new URL(location);
+            var imName = urlpage.searchParams.get("imgname");
+            var posInit = urlpage.searchParams.get("pos");
+            var wfsInURL = urlpage.searchParams.get("wfs");
+            if(posInit) posInit = posInit.split(",");
+            //console.log(imName, "  ", posInit);
+
+            var orientedImageLayer;
+            
+            var pictureInfos;
+            var camera;
+            var camHelper;
+            var plane;
+            var orientedImage;
+            var orientedImageGUI;
+            var orientedMenu = false;
+            var currentIndiceNav = 0;
+            var currentImageName = "";
+            var globalCurrentCamOriented;
+            var currentOrientationWorkedImage = "x";
+            var currentCameraScene;
+            var meshes = [];
+            var scaler;
+            var textureMaterial = new OrientedImageMaterial({
+                    map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
+                    transparent:true
+                });
+            var currentOpacity = 1;
+            var currentDistance = 350;
+            var arrDisplayedImages = [];
+            var meshesForeverever = [];
+            var previewOn = false;
+            var nearProj = 1;
+            var farProj = 500;
+            var target;
+            var olayer;  // Oriented Image Layer
+            var model; // 3D model loaded
+            var arrAppariement = [];
+            var currentObjUnderMouse;
+            var lastObjUnderMouse;
+            var firstMoveOut = false; // when mouse over leave camerahelper
+            var scaleOff = false;
+            var nbToModify = 0;  // Ugly init for animation
+            var scalingOffisOn = false;
+            var lowResValue = 128;
+            var highResValue = 2048;
+            var arrLoadedCameraNames = [];
+            var previewModeOn = false;  // To handle the loading of super low resolution image like 128*128
+            var mouseDown = false;
+            var positionMouseDown = new THREE.Vector2();
+            // var arrAppariementScene = [];
+            // var arrAppariementOld = [];
+
+            // Alex modifications to handle multiple images
+            var arrayImages = [];
+            arrayImages = [{image: 'LOC-04753X.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'notredame.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'rueVieilleDuTemple8.jpg', distance: 600, opacity: 1, plane:null},
+            {image: 'planNotreDame.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'plandetailleCite.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'pontlouisphilippe.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1919_CAF_C-1_0012.jpg', distance: 350, opacity: 1, plane:null}, 
+            {image: '1951_DUR_208_0007.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1951_DUR_214_0024.jpg', distance: 350, opacity: 1, plane:null}, 
+            {image: '1951_DUR_214_0022.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1919_CAF_Z-36_0008.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'trocadero2.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'FRAN_0207_3299_L.jpg', distance: 350, opacity: 1, plane:null},
+            {image: 'FRAN_0207_0648_L.jpg', distance: 350, opacity: 1, plane:null}];
+            if(imName !== null)
+                arrayImages.unshift(  {image: imName, distance: 350, opacity: 1, plane:null} );
+            
+            // Define initial camera position  // 43.9542987,6.5115427 44.1751125,6.3516113,222m 44.1748836,6.3511125
+            // var positionOnGlobe = { longitude: 2.3186303566461626, latitude: 48.86426741804917, altitude: 188.94939874485135 };
+            // 42.7211829,1.8392353
+            // 48.8365154,-3.3129326 ( rocher de la sentinelle)   // fprca: 43.9595975,5.7772372,
+            var positionOnGlobe = { longitude:5.7772372, latitude: 43.9595975, altitude: 1878.615379151888 };
+            if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
+            //console.log(positionOnGlobe);
+            //var miniView;
+            var minDistance = 10000000;
+            var maxDistance = 30000000;
+
+            var meshes = [];
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+            //var miniDiv = document.getElementById('miniDiv');
+
+            // Instanciate iTowns view*
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            view.camera.camera3D.near = 0.4;
+
+            var sceneAllCams = new THREE.Object3D();  // Object containg all oriented images cam
+            view.scene.add(sceneAllCams);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            //3D point number
+            var ptname = 0;
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('../../itowns/examples/layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('../../itowns/examples/layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('../../itowns/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            
+            
+            var menuGlobe = new GuiTools('menuDiv', view);
+
+            
+            var meshes = [];
+            var color = new itowns.THREE.Color();
+            function altitudeBuildings(properties) {
+                //console.log(properties.z_min, properties.hauteur);
+                return properties.z_min - properties.hauteur - 3;
+            }
+
+            function extrudeBuildings(properties) {
+                if (properties.id.indexOf('bati_remarquable') === 0) 
+                    return properties.hauteur;
+                    else
+                    return properties.hauteur + 20;
+            }
+
+            function acceptFeature(properties) {
+                return !!properties.hauteur;
+            }
+
+            
+            function colorBuildings(properties) {
+                if (properties.id.indexOf('bati_remarquable') === 0) {
+                    return color.set(0x5555ff);
+                } else if (properties.id.indexOf('bati_industriel') === 0) {
+                    return color.set(0xff5555);
+                }
+                return color.set(0xeeeeee);
+            }
+
+            function modifyAppearance(mesh){
+
+              //  mesh.material = [mesh.material,new itowns.THREE.MeshBasicMaterial({wireframe:true})];
+            }
+/*
+            scaler = function update() {
+                var i;
+                var mesh;
+                if (meshes.length) {
+                    view.notifyChange(view.camera.camera3D, true);
+                }
+                for (i = 0; i < meshes.length; i++) {
+                    mesh = meshes[i];
+                    if (mesh) {
+                        mesh.scale.z = Math.min(
+                            1.0, mesh.scale.z + 0.1);
+                        mesh.updateMatrixWorld(true);
+                    }
+                }
+                meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
+            };
+*/
+        //    view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
+
+
+
+
+
+
+        var wfsBuildingSource = new itowns.WFSSource({
+                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                projection: 'EPSG:4326',
+                ipr: 'IGN',
+                format: 'application/json',
+                zoom: { min: 14, max: 14 },
+                extent: {
+                    west: -10,
+                    east: 15.18,
+                    south: 40.437,
+                    north: 49.03,
+                },
+            });
+
+
+            var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
+                update: itowns.FeatureProcessing.update,
+                convert: itowns.Feature2Mesh.convert({
+                    color: colorBuildings,
+                    batchId: function (property, featureId) { return featureId; },
+                    altitude: altitudeBuildings,
+                    extrude: extrudeBuildings }),
+                filter: acceptFeature,
+                overrideAltitudeInToZero: true,
+                source: wfsBuildingSource
+            });
+            view.addLayer(wfsBuildingLayer);
+
+
+
+
+        </script>
+    </body>
+</html>

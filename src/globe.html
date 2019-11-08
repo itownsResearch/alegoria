@@ -63,17 +63,16 @@
             
         </style>
         <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="../itowns-photogrammetric-camera/examples/css/example.css">
-        <link rel="stylesheet" type="text/css" href="../itowns-photogrammetric-camera/examples/css/loading_screen.css">
+        <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/example.css">
+        <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/LoadingScreen.css">
         <link rel="stylesheet" type="text/css" href="scene2d.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="../itowns-photogrammetric-camera/examples/js/GUI/dat.gui/dat.gui.min.js"></script>
-        <script src="../itowns-photogrammetric-camera/examples/js/OrientedImageHelper.js"></script>
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+        <script src="../../itowns/examples/js/OrientedImageHelper.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
         
     </head>
-    <body>
+    <body>  
 
         <div id="viewerDiv">        
                 <p id="info">
@@ -94,17 +93,32 @@
             <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
         </form>
 
+        
+        <script src="../../itowns/examples/js/GUI/GuiTools.js"></script>
+        <script src="../../itowns/dist/itowns.js"></script>
+        <script src="../../itowns/examples/js/GUI/LoadingScreen.js"></script>
+        <script src="../../photogrammetric-camera/dist/three-photogrammetric-camera.js"></script>
+    <!--    <script src="../../itowns/examples/js/ThreeLoader.js"></script>   -->
+        <script src="../../itowns/dist/debug.js"></script>
+        <!--    <script src="../../itowns/examples/js/proj4defs/2154.js"></script> -->
+
+<!--
         <script src="../itowns-photogrammetric-camera/examples/js/GUI/GuiTools.js"></script>
-        <script src="../itowns-photogrammetric-camera/dist/itowns.js"></script>
+        <script src="../itowns-photogrammetric-camera/dist/itowns.js"></script> 
         <script src="../itowns-photogrammetric-camera/examples/js/loading_screen.js"></script>
         <script src="../itowns-photogrammetric-camera/examples/js/ThreeLoader.js"></script>
         <script src="../itowns-photogrammetric-camera/dist/debug.js"></script>
         <script src="../itowns-photogrammetric-camera/examples/js/proj4defs/2154.js"></script>
+-->
+
         <script src="scene2d.js"></script>
         <script src="scene3dv2.js"></script>
         <script src="createCalibrationFile.js"></script>
         <script src="createMicmacChantierDescripteur.js"></script>
-        <!--      <script type="module"  src="geojsonToWFST.js"></script>   -->
+
+
+
+
         <script type="module">
 /*
                 import {Transaction, Insert} from './geojsonToWFST.js'
@@ -235,12 +249,13 @@
         <script type="text/javascript">
             
             // THREE photogrammetric camera variables
-            var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
-            var MicmacOrientationParser = itowns.MicmacOrientationParser;
-            var FetchSource = itowns.FetchSource;
-            var OrientedImageMaterial = itowns.OrientedImageMaterial;
-            var RadialDistortion = itowns.RadialDistortion;
-            var THREE = itowns.THREE;
+            var PhotogrammetricCamera = ThreePhotogrammetricCamera.PhotogrammetricCamera; //three-photogrammetric-camera.PhotogrammetricCamera;
+            var MicmacOrientationParser = ThreePhotogrammetricCamera.MicmacOrientationParser;
+            var FetchSource = ThreePhotogrammetricCamera.FetchSource;
+            var OrientedImageMaterial = ThreePhotogrammetricCamera.OrientedImageMaterial;
+            var RadialDistortion = ThreePhotogrammetricCamera.RadialDistortion;
+            var THREE = ThreePhotogrammetricCamera.THREE; // itowns.THREE;
+
 
             // Get possible parameters from url like imagename
             var urlpage = new URL(location);
@@ -267,10 +282,8 @@
             var meshes = [];
             var scaler;
             var textureMaterial = new OrientedImageMaterial({
-                    map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
-                   // tDepth: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
-                   // opacity: currentOpacity,
-                    transparent:true,
+                    map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
+                    transparent:true
                 });
             var currentOpacity = 1;
             var currentDistance = 350;
@@ -334,18 +347,24 @@
             //var miniDiv = document.getElementById('miniDiv');
 
             // Instanciate iTowns view*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false,noControls: false,});
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe,{handleCollision: false, noControls: false});
             view.camera.camera3D.near = 0.4;
 
             var sceneAllCams = new THREE.Object3D();  // Object containg all oriented images cam
             view.scene.add(sceneAllCams);
             
+
+
+
             //  { sseSubdivisionThreshold: 6,
             //      noControls: false,
             //       handleCollision: false}
+            
+
 
             //var view = view;
             setupLoadingScreen(viewerDiv, view);
+            
 
             //3D point number
             var ptname = 0;
@@ -353,7 +372,7 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/Ortho.json').then(function _(config) {
+            itowns.Fetcher.json('../../itowns/examples/layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
@@ -373,9 +392,13 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('../itowns-photogrammetric-camera/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('../../itowns/examples/layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('../../itowns/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            
+            
+            var menuGlobe = new GuiTools('menuDiv', view);
 
+            
             var meshes = [];
             var color = new itowns.THREE.Color();
             function altitudeBuildings(properties) {
@@ -428,17 +451,35 @@
 
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
-
+/*
             var wfsBuildingSource = new itowns.WFSSource({
+                url: 'https://wxs.ign.fr/vboe9ia0y4tnpi7pxabn4dbj/geoportail/wfs?',//3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                version: '3.0.0',
+                typeName: 'BDTOPO_V3:batiment', //'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                projection: 'EPSG:3857',//'EPSG:4326',
+                ipr: 'IGN',
+                format: 'application/json',
+                zoom: { min: 15, max: 15 },
+              
+            });
+            */
+           
+        var wfsBuildingSource = new itowns.WFSSource({
                 url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                 version: '2.0.0',
                 typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
                 projection: 'EPSG:4326',
                 ipr: 'IGN',
                 format: 'application/json',
-                zoom: { min: 15, max: 15 },
-              
+                zoom: { min: 14, max: 14 },
+                extent: {
+                    west: -10,
+                    east: 15.18,
+                    south: 40.437,
+                    north: 49.03,
+                },
             });
+
 
             var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
@@ -621,7 +662,7 @@
 
 
 
-            var menuGlobe = new GuiTools('menuDiv', view);
+            
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
@@ -1698,7 +1739,7 @@
             //computeResection({}, document.getElementById('img').src.split('/').pop(), false);
         }
 
-
+/*      
         function load3DModel(){
              // ThreeLoader can load each format proposed in ThreeJs examples loaders : https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
               var promiseCollada = ThreeLoader.load('GLTF', 'alexPont.glb')
@@ -1734,6 +1775,7 @@
                     view.notifyChange();
                 });
         }
+*/
 
         /*********** Keyboard/Mouse functions for preview of orientation ********************/
             var raycaster = new THREE.Raycaster();
