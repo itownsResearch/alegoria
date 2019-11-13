@@ -8,3 +8,62 @@
     height: 100%; 
     width: auto; 
 }
+
+
+#miniDiv {
+    display: block;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    position: absolute;
+    left: 20;
+    bottom: 0;
+    color: white;
+}
+#info {
+    color: black;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin-right: 15px;
+    padding: 0.3rem;
+    background-color: rgba(255, 255, 255, 0.493);
+    border: 2px solid black;
+    border-radius: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+.styleForm {
+    text-align: center;
+    display: block;
+    margin-top: 00px;
+    margin-left: 20px;
+    position: absolute;
+    color: black;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 12px;
+    left: 0;
+    bottom: 10;
+}
+.buttonX {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 4px 4px;
+    text-align: center; 
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    bottom: 0;
+}
+p { background-color:#FFFFFF; 
+    color: black;
+}
+
+.imageholder{
+    position: relative;
+    float: right;
+    vertical-align: middle;
+    bottom: 10;
+    left: 4;
+}

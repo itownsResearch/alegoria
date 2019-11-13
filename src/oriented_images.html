@@ -268,10 +268,11 @@
 
 
             function setMaterial(material, camera) {
+                /*
                 material.map =  uvTexture; //textures[camera.name] || uvTexture;
                 camera.getWorldPosition(material.uvwPosition);
                 const m = new THREE.Matrix4().copy(camera.matrixWorldInverse);
-                m.setPosition({x:0,y:0,z:0});
+                m.setPosition(0,0,0);
                 material.uvwPreTransform.copy(camera.preProjectionMatrix).multiply(m);
                 material.uvwPostTransform.copy(camera.postProjectionMatrix);
                 if (camera.distos && camera.distos.length == 1 && camera.distos[0].type === 'ModRad') {
@@ -279,7 +280,7 @@
                 } else {
                     material.uvDistortion = { C: new THREE.Vector2(), R: new THREE.Vector4() };
                     material.uvDistortion.R.w = Infinity;
-                }
+                }*/
             }
 
 

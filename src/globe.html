@@ -1,77 +1,15 @@
 <html>
     <head>
         <title>Itowns - Globe</title>
-
-        <style type="text/css">
-            #miniDiv {
-                display: block;
-                margin-bottom: 20px;
-                margin-right: 20px;
-                position: absolute;
-                left: 20;
-                bottom: 0;
-                color: white;
-            }
-            #info {
-                color: black;
-                position: absolute;
-                bottom: 0;
-                right: 0;
-                margin-right: 15px;
-                padding: 0.3rem;
-                background-color: rgba(255, 255, 255, 0.493);
-                border: 2px solid black;
-                border-radius: 5px;
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 11px;
-            }
-            .styleForm {
-                text-align: center;
-                display: block;
-                margin-top: 00px;
-                margin-left: 20px;
-                position: absolute;
-                color: black;
-                font-family: 'Open Sans',
-                sans-serif;
-                font-size: 12px;
-                left: 0;
-                bottom: 10;
-            }
-            .buttonX {
-                background-color: #4CAF50; /* Green */
-                border: none;
-                color: white;
-                padding: 4px 4px;
-                text-align: center; 
-                text-decoration: none;
-                display: inline-block;
-                font-size: 12px;
-                bottom: 0;
-            }
-            p { background-color:#FFFFFF; 
-                color: black;
-            }
-
-            .imageholder{
-                position: relative;
-                float: right;
-                vertical-align: middle;
-                bottom: 10;
-                left: 4;
-            }
-            
-        </style>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/example.css">
         <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/LoadingScreen.css">
         <link rel="stylesheet" type="text/css" href="scene2d.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-        <script src="../../itowns/examples/js/OrientedImageHelper.js"></script>
-        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-        
+        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>    
     </head>
+
     <body>  
 
         <div id="viewerDiv">        
@@ -101,15 +39,6 @@
     <!--    <script src="../../itowns/examples/js/ThreeLoader.js"></script>   -->
         <script src="../../itowns/dist/debug.js"></script>
         <!--    <script src="../../itowns/examples/js/proj4defs/2154.js"></script> -->
-
-<!--
-        <script src="../itowns-photogrammetric-camera/examples/js/GUI/GuiTools.js"></script>
-        <script src="../itowns-photogrammetric-camera/dist/itowns.js"></script> 
-        <script src="../itowns-photogrammetric-camera/examples/js/loading_screen.js"></script>
-        <script src="../itowns-photogrammetric-camera/examples/js/ThreeLoader.js"></script>
-        <script src="../itowns-photogrammetric-camera/dist/debug.js"></script>
-        <script src="../itowns-photogrammetric-camera/examples/js/proj4defs/2154.js"></script>
--->
 
         <script src="scene2d.js"></script>
         <script src="scene3dv2.js"></script>
@@ -254,7 +183,7 @@
             var FetchSource = ThreePhotogrammetricCamera.FetchSource;
             var OrientedImageMaterial = ThreePhotogrammetricCamera.OrientedImageMaterial;
             var RadialDistortion = ThreePhotogrammetricCamera.RadialDistortion;
-            var THREE = ThreePhotogrammetricCamera.THREE; // itowns.THREE;
+            var THREE = itowns.THREE; //ThreePhotogrammetricCamera.THREE; // itowns.THREE;
 
 
             // Get possible parameters from url like imagename
@@ -334,6 +263,8 @@
             // var positionOnGlobe = { longitude: 2.3186303566461626, latitude: 48.86426741804917, altitude: 188.94939874485135 };
             // 42.7211829,1.8392353
             // 48.8365154,-3.3129326 ( rocher de la sentinelle)   // fprca: 43.9595975,5.7772372,
+
+            itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
             var positionOnGlobe = { longitude:5.7772372, latitude: 43.9595975, altitude: 1878.615379151888 };
             if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
             //console.log(positionOnGlobe);
@@ -352,19 +283,8 @@
 
             var sceneAllCams = new THREE.Object3D();  // Object containg all oriented images cam
             view.scene.add(sceneAllCams);
-            
 
-
-
-            //  { sseSubdivisionThreshold: 6,
-            //      noControls: false,
-            //       handleCollision: false}
-            
-
-
-            //var view = view;
             setupLoadingScreen(viewerDiv, view);
-            
 
             //3D point number
             var ptname = 0;
@@ -471,7 +391,7 @@
                 projection: 'EPSG:4326',
                 ipr: 'IGN',
                 format: 'application/json',
-                zoom: { min: 14, max: 14 },
+                zoom: { min: 15, max: 15 },
                 extent: {
                     west: -10,
                     east: 15.18,
@@ -526,8 +446,7 @@
             // Handles PVA representation when received from WFS
             // Load image and project it on the ground using the image properties
             function workWithMesh(m){
-
-
+                
                 //console.log(m);
                 m.material.size = 25;
                 for (var i = 0; i < m.feature.geometry.length; ++i){
@@ -551,8 +470,6 @@
                     // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
                     //var pvaTexture = new itowns.THREE.TextureLoader().load('IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826.jpg');
 
-
-                    
                     // We then create a photogrammetric camera using the PVA properties
                     // Intrinsec properties
                     var focal =  [prop.fx, prop.fy];
@@ -580,44 +497,15 @@
                     cameraP.position.copy(pos);
 
                     var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
-                    // var ENUQuat = itowns.OrientationUtils.quaternionFromAttitude({roll:0, pitch:0, heading:0}, coords, true);
-                    // quaternion.premultiply(ENUQuat);
-                     var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS("EPSG:2154", "EPSG:4978")(coords);
-                     quaternion.premultiply(quat_crs2crs);
-                    //var quatLocal = itowns.OrientationUtils.quaternionToCRS('EPSG:4978')(coords);
-                 //   quaternion.premultiply(itowns.OrientationUtils.quaternionToCRS('EPSG:2154')(coords));
-                 //   quaternion.premultiply(itowns.OrientationUtils.quaternionToCRS('EPSG:4978')(coords));
-                  
-                        // var ENUQuat = itowns.OrientationUtils.quaternionToGeocent()(coords);.
-                        // quaternion.premultiply(ENUQuat);
+                    var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS("EPSG:2154", "EPSG:4978")(coords);
+                    quaternion.premultiply(quat_crs2crs);
                     cameraP.quaternion.copy(quaternion);
-                    
-                    //console.log('cameraP ', cameraP);
-                    
-                   // cameraP.updateMatrixWorld(true);
-                    //console.log(cameraP, "cameraPPPPPPPPPPPPPPPPPPPP ", m);
-                    if(url.includes("843")) {console.log("CAM 843: cameraP: ",cameraP, "prop: ", prop);
-                    url = "OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843FromMathieu.jpg";
-                    cameraP.name = url;
-                }
 
-                    // test to play with subcamera (crop bordersfor scan images)
-                   /* this.view = {
-                        enabled: false,
-                        offsetX: 0,
-                        offsetY: 0,
-                        width: size.x,
-                        height: size.y,
-                        fullWidth: size.x,
-                        fullHeight: size.y,
-                    };
-                    */
-                   /*
-                        cameraP.view.enabled = true;
-                        cameraP.view.offsetX = 300;
-                        cameraP.view.width = 3000;
-                        cameraP.view.fullWidth = 4300;
-                    */
+                    if(url.includes("843")) {console.log("CAM 843: cameraP: ",cameraP, "prop: ", prop);
+                        url = "OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843FromMathieu.jpg";
+                        cameraP.name = url;
+                    }
+
                     createCameraHelper(cameraP);
                     // m.add(sceneAllCams);
                 }
@@ -924,7 +812,7 @@
                     geometry.addGroup(12, 6, 1);
                     // viewMaterials[camera.name] = new OrientedImageMaterial(viewMaterialOptions);
                     // viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
-                    //mat.map = uvTexture;
+                    // mat.map = uvTexture; 
                     var mesh = new THREE.Mesh( geometry, [wireMaterial, mat] );
                     mesh.scale.set(200, 200, 200);
                     group.add(mesh);
@@ -943,9 +831,10 @@
                 //material.map =  uvTexture; //textures[camera.name] || uvTexture;
                 camera.getWorldPosition(material.uvwPosition);
                 const m = new THREE.Matrix4().copy(camera.matrixWorldInverse);
-                m.setPosition({x:0,y:0,z:0});
+                m.setPosition(0,0,0);
                 material.uvwPreTransform.copy(camera.preProjectionMatrix).multiply(m);
                 material.uvwPostTransform.copy(camera.postProjectionMatrix);
+                
                 if (camera.distos && camera.distos.length == 1 && camera.distos[0].type === 'ModRad') {
                     material.uvDistortion = camera.distos[0];
                 } else {
@@ -1003,14 +892,7 @@
                 currentOrientationWorkedImage = currentImageName;
                 //view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
                 arrDisplayedImages.push(cam);
-                /*
-                textureMaterial = new OrientedImageMaterial({
-                    map: new itowns.THREE.TextureLoader().load('../data/uv.jpg'), // uvTexture,
-                   // tDepth: new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
-                    opacity:currentOpacity,
-                    transparent:true,
-                });
-                */
+
                 // Already set in case of DB WFS. We can set here the High Resolution image (TODO)
                 if(cam.name === ""){  // Old school XML
                     setMaterial(textureMaterial, cam);
@@ -1023,7 +905,6 @@
                     view.scene.add(globalCurrentCamOriented);  
                     // camera set from micmac orientation file
                     camera = cam;
-
                 }else{   // DB WFS
                     globalCurrentCamOriented = cam;
                     camera = cam;
@@ -1032,7 +913,7 @@
                 var pictureInfos = arrayImages[currentIndiceNav];
 
                 // Dirty mod to handle previous version with the new DB WFS one
-                if(cam.name === ""){
+                if(cam.name === ""){ // Old School XMl
                     console.log("cam.name  null", cam);
                     if(pictureInfos.plane == null){
                         plane = setupPictureFromCamera(camera, '../data/' + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
@@ -1086,6 +967,8 @@
                     opacity:currentOpacity,
                     transparent:true,
                 });
+
+                console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", textureMaterialP);
             
                 setMaterial(textureMaterialP, cam);
                 var camHelper = cameraHelper(cam, textureMaterialP);
@@ -1935,6 +1818,145 @@
                     centerCameraStreetView();
                 }
             }, false);
+
+
+
+
+            // OrientedImage Helper from iTowns Examples JS code is now here and should be in a separate class but without itowns dep
+            /* global itowns, document */
+
+            // set object position to the coordinate
+            // set object ENH orientation: X to the east, Y (green) to the north, Z (blue) look to the sky.
+            function placeObjectFromCoordinate(object, coord) {
+                // set object position to the coordinate
+                coord.xyz(object.position);
+                // set ENH orientation, looking at the sky (Z axis), so Y axis look to the north..
+                object.lookAt(coord.geodesicNormal.clone().add(object.position));
+            }
+
+            function createTexturedPlane(textureUrl, opacity) {
+                var texture;
+                var geometry;
+                var material;
+
+                texture = new itowns.THREE.TextureLoader().load(textureUrl);
+                geometry = new itowns.THREE.PlaneGeometry(1, 1, 32);
+                material = new itowns.THREE.MeshBasicMaterial({
+                    map: texture,
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: opacity,
+                });
+                return new itowns.THREE.Mesh(geometry, material);
+            }
+
+            function transformTexturedPlane(camera, distance, plane) {
+                var Yreel = 2 * Math.tan(itowns.THREE.Math.degToRad(camera.fov / 2)) * distance;
+                var Xreel = camera.aspect * Yreel;
+
+                // set position and scale
+                plane.scale.set(Xreel, Yreel, 1);
+                plane.position.set(0, 0, -distance);
+
+                plane.updateMatrixWorld();
+            }
+
+            // eslint-disable-next-line no-unused-vars
+            function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLookAt, rotMatrix,
+                orientationToCameraUp, orientationToCameraLookAt, distance, size, focale) {
+                var fov = itowns.THREE.Math.radToDeg((2 * Math.atan((size[1] / 2) / focale)));
+                var coordView;
+                var localSpace;
+                var orientedImage;
+                var quaternion;
+                var camera;
+
+                coordView = coord.as(view.referenceCrs);
+
+                // create 'local space', with the origin placed on 'coord',
+                // with Y axis to the north, X axis to the east and Z axis as the geodesic normal.
+                localSpace = new itowns.THREE.Object3D();
+                view.scene.add(localSpace);
+                placeObjectFromCoordinate(localSpace, coordView);
+
+                // add second object : 'oriented image'
+                orientedImage = new itowns.THREE.Object3D();
+                // setup initial convention orientation.
+                orientedImage.up.copy(EnhToOrientationUp);
+                orientedImage.lookAt(EnhToOrientationLookAt);
+
+                // place the 'oriented image' in the 'local space'
+                localSpace.add(orientedImage);
+
+                // apply rotation
+                quaternion = new itowns.THREE.Quaternion().setFromRotationMatrix(rotMatrix);
+                orientedImage.quaternion.multiply(quaternion);
+                // orientedImage.updateMatrixWorld();
+
+                // create a THREE JS Camera
+                camera = new itowns.THREE.PerspectiveCamera(fov, size[0] / size[1], distance / 2, distance * 2);
+                camera.up.copy(orientationToCameraUp);
+                camera.lookAt(orientationToCameraLookAt);
+
+                orientedImage.add(camera);
+
+                localSpace.updateMatrixWorld(true);
+                return camera;
+            }
+
+            // eslint-disable-next-line no-unused-vars
+            function setupPictureFromCamera(camera, imageUrl, opacity, distance) {
+                // create a textured plane, representing the picture.
+                var plane = createTexturedPlane(imageUrl, opacity);
+                camera.add(plane);
+
+                transformTexturedPlane(camera, distance, plane);
+
+                return plane;
+            }
+
+            // set camera settings to view.camera,
+            // BUT keep the geodesic normal as Up vector
+            // eslint-disable-next-line no-unused-vars
+            function setupViewCameraLookingAtObject(camera, coord, objectToLookAt) {
+                camera.position.copy(coord.xyz());
+                camera.up.copy(coord.geodesicNormal);
+                camera.lookAt(objectToLookAt.getWorldPosition());
+            }
+
+            // set camera settings to view.camera, even the up vector !
+            // eslint-disable-next-line no-unused-vars
+            function setupViewCameraDecomposing(view, camera) {
+
+                //camera.matrixWorld.decompose(viewCamera.position, viewCamera.quaternion, viewCamera.scale);
+                t = 0;
+                interpolateCam(view, camera);
+            }
+
+            var t = 0;
+            var inc = 0.004;
+            function interpolateCam(view, camera){
+                if(t < 1.){
+                    var viewCamera = view.camera.camera3D;
+                    viewCamera.quaternion.slerp( camera.quaternion, t += inc );
+                    viewCamera.position.lerp( camera.position, t += inc );
+                    viewCamera.scale.lerp( camera.scale, t += inc );
+                    view.notifyChange();
+                    requestAnimationFrame(function(){interpolateCam(view,camera);});
+                }
+            }
+
+            // add a camera helper to debug camera position..
+            // eslint-disable-next-line no-unused-vars
+            function addCameraHelper(view, camera) {
+                var cameraHelper = new itowns.THREE.CameraHelper(camera);
+                view.scene.add(cameraHelper);
+                cameraHelper.updateMatrixWorld(true);
+            }
+
+
+
+
 
         </script>
     </body>
