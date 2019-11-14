@@ -2,7 +2,6 @@
     <head>
         <title>Itowns - Globe</title>
         <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/example.css">
         <link rel="stylesheet" type="text/css" href="../../itowns/examples/css/LoadingScreen.css">
         <link rel="stylesheet" type="text/css" href="scene2d.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +17,6 @@
                         <br> 
                         <a href="http://www.archives-nationales.culture.gouv.fr/" target="_blank"> Images: Archives Nationales </a>
                 </p>
-            <!-- span class="divScaleWidget"> Scale </span>  -->
             <div id="miniDiv">
                 <img id="img"  onmousedown="getImgCoordOnClick(event)">
             </div>
@@ -31,15 +29,12 @@
             <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
         </form>
 
-        
         <script src="../../itowns/examples/js/GUI/GuiTools.js"></script>
         <script src="../../itowns/dist/itowns.js"></script>
         <script src="../../itowns/examples/js/GUI/LoadingScreen.js"></script>
         <script src="../../photogrammetric-camera/dist/three-photogrammetric-camera.js"></script>
-    <!--    <script src="../../itowns/examples/js/ThreeLoader.js"></script>   -->
+        <!--    <script src="../../itowns/examples/js/ThreeLoader.js"></script>   -->
         <script src="../../itowns/dist/debug.js"></script>
-        <!--    <script src="../../itowns/examples/js/proj4defs/2154.js"></script> -->
-
         <script src="scene2d.js"></script>
         <script src="scene3dv2.js"></script>
         <script src="createCalibrationFile.js"></script>
@@ -330,7 +325,7 @@
                 if (properties.id.indexOf('bati_remarquable') === 0) 
                     return properties.hauteur;
                     else
-                    return properties.hauteur + 20;
+                    return properties.hauteur; // + 20;
             }
 
             function acceptFeature(properties) {
@@ -993,22 +988,16 @@
 
             function updatePlaneDistance(value) {
 
-               // transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
+                // transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
                 currentDistance = value;
                 var scale = value / 100;
-
-
-/*
-                camHelper.scale.set(scale,scale,scale);
-                camHelper.updateMatrixWorld();
-*/
+                //camHelper.scale.set(scale,scale,scale);
+                //camHelper.updateMatrixWorld();
                 currentObjUnderMouse.scale.set(scale,scale,scale);
                 view.notifyChange(view.camera.camera3D);
-                //console.log(menuGlobe);
             }
            
             function updatePlaneOpacity(value) {
-            //    console.log(value, plane);
                 currentOpacity = value;
                 textureMaterial.transparent = true;
                 if(plane) plane.material.opacity = value;
