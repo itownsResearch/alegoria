@@ -67,3 +67,71 @@ function export3Dcoord(ptname,x,y,z) {
     xhr2.send(xmlDoc2);
          
 }
+
+
+// Function to export in the database through WFS
+// Export a THREEJS Camera (quaternion and co) to the database
+// tableName for ex frejus
+// Beware of the coordinate system. By default, all is in geocentric coordinates 
+// as it is used in the 3D scene (orientation and position on earth (geocentric))
+function exportToWFS(cam, tableName){
+
+       var q = cam.quaternion;
+       var f = cam.focal;
+       var p = cam.point;
+       var s = cam.view;
+       var d = cam.distos[0];
+       var name = cam.originalName; // cam.name; // Beware of url vs name
+       var pos = cam.position;
+       // Sending the transaction to the WFS
+       var url_0 = 'http://134.158.74.36:8080/geoserver/wfs'; // 'http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';       
+       var data3 = '<wfs:Transaction service="WFS" version="1.0.0"\
+                       xmlns:wfs="http://www.opengis.net/wfs"\
+                       xmlns:topp="http://www.openplans.org/topp"\
+                       xmlns:gml="http://www.opengis.net/gml"\
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\
+                       xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd http://www.openplans.org/topp http://localhost:8080/geoserver/wfs/DescribeFeatureType?typename=' + tableName + '}">\
+                       <wfs:Insert>\
+                           <' + tableName + '>\
+                               <point>\
+                                   <gml:Point srsName="http://www.opengis.net/gml/srs/epsg.xml#2154">\
+                                       <gml:coordinates xmlns:gml="http://www.opengis.net/gml" decimal="." cs="," ts=" ">' + pos.x +','+ pos.y +','+ pos.z + '</gml:coordinates>\
+                                   </gml:Point>\
+                               </point>\
+                               <name>\
+                                   '+ name + '\
+                               </name>\
+                               <qx>' + q.x + '</qx>\
+                               <qy>' + q.y + '</qy>\
+                               <qz>' + q.z + '</qz>\
+                               <qw>' + q.w + '</qw>\
+                               <fx>' + f.x + '</fx>\
+                               <fy>' + f.y + '</fy>\
+                               <px>' + p.x + '</px>\
+                               <py>' + p.y + '</py>\
+                               <sk>0.0</sk>\
+                               <sx>' + s.width + '</sx>\
+                               <sy>' + s.height + '</sy>\
+                               <c3>' + d.R.x  + '</c3>\
+                               <c5>' + d.R.y  + '</c5>\
+                               <c7>' + d.R.z  + '</c7>\
+                               <cm>' + d.R.w  + '</cm>\
+                               <cx>' + d.C.x  + '</cx>\
+                               <cy>' + d.C.y  + '</cy>\
+                           </' + tableName + '>\
+                       </wfs:Insert>\
+                       </wfs:Transaction>';
+
+       fetch(url_0, {
+           method: 'POST', // or 'PUT'
+           body: data3, // JSON.stringify(data), // data can be `string` or {object}!
+           headers:{
+               'Content-Type': 'application/json'
+       }
+       }).then(res => res.json())
+       .then(response => console.log('Success:', JSON.stringify(response)))
+       .catch(error => console.error('Error:', error));
+
+
+
+}

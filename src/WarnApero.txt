@@ -1,4 +1,0 @@
-=================================================================
-1 occurence of warn type [Focal length specified both by xif and NKS-Assoc-STD-FOC]
-First context message : Cam=./Mont.jpg
-First detected at line :  1073 of File C:\projects\micmac-uct71\src\util\dates.cpp

@@ -41,135 +41,6 @@
         <script src="createMicmacChantierDescripteur.js"></script>
 
 
-
-
-        <script type="module">
-/*
-                import {Transaction, Insert} from './geojsonToWFST.js'
-                console.log("WWWWWWWWWWWWWWWWW", Insert);
-                
-                const nullIsland = {
-                    type: 'Feature',
-                    properties: {place_name: 'null island'},
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [0, 0]
-                    },
-                    id: 'feature_id'
-                };
-                const params = {geometry_name: 'Point', layer: 'frejus', ns: 'my_namespace'};
-
-                // create a stringified transaction inserting null island
-                var t = Transaction(
-                            Insert(nullIsland, params),
-                            {
-                                nsAssignments: {
-                                my_namespace: 'https://example.com/namespace_defn.xsd'
-                                }
-                            }
-                        );
-
-                console.log("my trannnnnssaction: ", t);
-
-                // Try sending the transaction to the WFS
-                var url = 'http://134.158.74.36:8080/geoserver/wfs';//'http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';
-                var data = t; // {username: 'example'};
-                var geometry = "63.00,23.00";         
-                var text = "";   
-                var data2 =
-                            '<wfs:Transaction >\
-                                <wfs:Insert>\
-                                    \
-                                        <frejus >\
-                                                <gml:Point>\
-                                                    <gml:pos>59.163182034 -133.844892907</gml:pos>\
-                                                </gml:Point>\
-                                        </frejus>\
-                                </wfs:Insert>\
-                            </wfs:Transaction>';
-
-                var data3 = '<wfs:Transaction service="WFS" version="1.0.0"\
-                                xmlns:wfs="http://www.opengis.net/wfs"\
-                                xmlns:topp="http://www.openplans.org/topp"\
-                                xmlns:gml="http://www.opengis.net/gml"\
-                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\
-                                xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd http://www.openplans.org/topp http://localhost:8080/geoserver/wfs/DescribeFeatureType?typename=frejus">\
-                                <wfs:Insert>\
-                                    <frejus>\
-                                        <point>\
-                                            <gml:Point srsName="http://www.opengis.net/gml/srs/epsg.xml#2154">\
-                                                <gml:coordinates xmlns:gml="http://www.opengis.net/gml" decimal="." cs="," ts=" ">1006332.0251744,6265444.41901179,1707.49806221</gml:coordinates>\
-                                            </gml:Point>\
-                                        </point>\
-                                        <name>\
-                                            OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0847\
-                                        </name>\
-                                        <qx>0.024954604088073</qx>\
-                                        <qy>-0.0164633484081821</qy>\
-                                        <qz>0.70036987414708</qz>\
-                                        <qw>0.713153745892988</qw>\
-                                        <fx>9926.45192303177</fx>\
-                                        <fy>9926.45192303177</fy>\
-                                        <px>4230.82980647978</px>\
-                                        <py>4362.90946742076</py>\
-                                        <sk>0.0</sk>\
-                                        <sx>8758</sx>\
-                                        <sy>8759</sy>\
-                                        <c3>3.64028615366262E-11</c3>\
-                                        <c5>-9.93412660878962E-19</c5>\
-                                        <c7>-3.68160968910613E-26</c7>\
-                                        <cm>1.51833873736678E8</cm>\
-                                        <cx>4230.82980647978</cx>\
-                                        <cy>4362.90946742076</cy>\
-                                    </frejus>\
-                                </wfs:Insert>\
-                                </wfs:Transaction>';
-
-
-
-                fetch(url, {
-                    method: 'POST', // or 'PUT'
-                    body: data3, // JSON.stringify(data), // data can be `string` or {object}!
-                    headers:{
-                        'Content-Type': 'application/json'
-                }
-                }).then(res => res.json())
-                .then(response => console.log('Success:', JSON.stringify(response)))
-                .catch(error => console.error('Error:', error));
-*/
-
-
-/*
-                 // Test with geoserver Mathieu
-            var wfsGeoserverSource = new itowns.WFSSource({
-                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
-                protocol:'wfs',
-                version: '2.0.0',
-                typeName: 'alegoria%3Afrejus',
-                projection: 'EPSG:4326',
-                fetcher: itowns.Fetcher.json,
-                parser: itowns.GeoJsonParser.parse,
-                ipr: 'Alegoria',
-                format: 'json',
-                zoom: { min: 10, max: 10 },
-                networkOptions: {crossOrigin: ''}
-              
-            });
-*/
-                /*
-                // create a stringified transaction updating null island's name
-                wfs.Transaction(
-                    wfs.Update({properties: {place_name: 'not Atlantis'}, id: nullIsland.id }),
-                    {nsAssignments: 'wao'}
-                    )
-                    // same deal, but deleting it
-                    wfs.Transaction(
-                    wfs.Delete({id: nullIsland.id}, params),
-                    {nsAssignments: 'wao'}
-                )
-                */
-         </script>
-       
         <script type="text/javascript">
             
             // THREE photogrammetric camera variables
@@ -260,7 +131,7 @@
             // 48.8365154,-3.3129326 ( rocher de la sentinelle)   // fprca: 43.9595975,5.7772372,
 
             itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-            var positionOnGlobe = { longitude:5.7772372, latitude: 43.9595975, altitude: 1878.615379151888 };
+            var positionOnGlobe = { longitude:2.33, latitude: 48.83, altitude: 1878.615379151888 };
             if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
             //console.log(positionOnGlobe);
             //var miniView;
@@ -481,10 +352,10 @@
                         imageMatrix.elements[12] = prop.m20;
                         imageMatrix.elements[13] = prop.m21;
                     }
-                    console.log(imageMatrix);
                     var cameraP = new PhotogrammetricCamera(focal, size, point, 0, disto, undefined, undefined, undefined, imageMatrix );//, size, point, 0, [], 10, 10000); //, skew, distos, near, far);
                     // We inject the name of the image in the camera attributes
                     cameraP.name = url;
+                    cameraP.originalName = imgName;
 
                     // Extrinsec
                     var quaternion = new THREE.Quaternion(prop.qx, prop.qy, prop.qz, prop.qw); // console.log(m.feature.vertices.slice(i * 3, i * 3 + 3));
@@ -505,7 +376,6 @@
                     // m.add(sceneAllCams);
                 }
                 //m.add(sceneAllCams); 
-                console.log("m     :", m);
                 /*
                 handleOrientation(cameraP);
                 textureMaterial.map = pvaTexture;   // ! Dirty ! Asynchronous with camHelper creation...
@@ -593,34 +463,6 @@
                 //sendWFST();
             });
 
-            function sendWFST(){
-
-                //var WFS = import('geojsonToWFST.js');
-                                
-                const nullIsland = {
-                    type: 'Feature',
-                    properties: {place_name: 'null island'},
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [0, 0]
-                    },
-                    id: 'feature_id'
-                }
-                const params = {geometry_name: 'geom', layer: 'my_lyr', ns: 'my_namespace'};
-
-                // create a stringified transaction inserting null island
-                console.log(WFS);
-                /*
-                new Transaction(
-                new Insert(nullIsland, params),
-                {
-                    nsAssignments: {
-                    my_namespace: 'https://example.com/namespace_defn.xsd'
-                    }
-                }
-                );
-                */
-            }
 
             // Picking on buildings
             function pickingBuildings(event) {
@@ -789,7 +631,7 @@
             function cameraHelper(camera, mat) {
                 var wireMaterial = new THREE.MeshBasicMaterial( {color: Math.random() * 0XFFFFFF, wireframe: true} );
                 // create the group (looking at intrinsics only) that should be added to the camera frame.
-                var group = new THREE.Group(); console.log("camera.projectionMatrix", camera.projectionMatrix);
+                var group = new THREE.Group();
                 // place a frustum
                 {
                     m = new THREE.Matrix4().getInverse(camera.projectionMatrix);
@@ -836,6 +678,11 @@
                     material.uvDistortion = { C: new THREE.Vector2(), R: new THREE.Vector4() };
                     material.uvDistortion.R.w = Infinity;
                 }
+            }
+
+
+            function saveCamToWFS(){
+                exportToWFS(camera, "frejus");
             }
 
             // Uncomment playvideo
@@ -952,7 +799,7 @@
             // Function that create cameraHelper with all the properties of the oriented image
             // Picking on it to associate camera scene
             function createCameraHelper(cam){
-
+            
                 // Concerning the texture, Ideally we initiate with a low res (thumbnail) and then
                 // when the user chooses that camera it'll load HiRes. 
                 // Low res should be found using camera name + "lowres".jpg for example or more dynamically 
@@ -963,8 +810,6 @@
                     transparent:true,
                 });
 
-                console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", textureMaterialP);
-            
                 setMaterial(textureMaterialP, cam);
                 var camHelper = cameraHelper(cam, textureMaterialP);
                 var scale = currentDistance / 100;
@@ -972,12 +817,13 @@
                 cam.add(camHelper);
                 cam.updateMatrixWorld();
                 sceneAllCams.add(cam);
+                // console.log(cam);
                 // view.scene.add(cam);  
             }
 
-
+/*
             // If no initial position passed in the URL we launch the first registered image
-            if(! posInit){
+            if(! posInit && arrayImages.length > 0){
                 // fetch orientation file
                 var source = new FetchSource('../outputs/test/');
                 // parse micmac orientation
@@ -985,7 +831,7 @@
                     .then(data => MicmacOrientationParser.parse(data, source))
                     .then(handleOrientation);
             }
-
+*/
             function updatePlaneDistance(value) {
 
                 // transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
@@ -1061,7 +907,7 @@
                 var obj8 = { parallax: 0.};
                 var obj9 = { activateStreetLevel: function(){ activateStreetLevel() }};
                 var obj10 = { resectionAuto: function(){ computeResectionFullAuto() }};
-                var obj11 = { activateVideo: function(){ playVideo() }};
+                var obj11 = { activateVideo: function(){ saveCamToWFS() /* playVideo(); */ }};
                 
                 navImageGUI.add(obj,'next');
                 navImageGUI.add(obj2,'projectOnBuildings');
@@ -1140,7 +986,7 @@
                 view.getLayerById('atmosphere').visible = false;
                 // Prepare oriented image source
                 var orientedImageSource = new itowns.OrientedImageSource({  
-                        url:  '20150812-150812_0421-{cameraId}-00001_0000{panoId}.jpg'//'20150729-150729_0521-{cameraId}-00003_0000{panoId}.jpg' // 'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' // '20150729-150729_0521-{cameraId}-00005_0000{panoId}.jpg'// 'Paris2015-141106_0725-{cameraId}-00004_0000{panoId}.jpg' // Paris2015-141106_0725-00-00004_0000546 //'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' //  // 2 Zero to remove 'CalibV4-140407_0566-{cameraId}-00008_0000{panoId}.jpg' // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' // 'Paris2015-150123_0593-{cameraId}-00004_0000{panoId}.jpg'//'Paris-150630_0723-{cameraId}-00005_0000{panoId}.jpg'  // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' 
+                        url:  '20150812-150812_0421-{cameraId}-00001_0000{panoId}.jpg' // ! The images have been moved to ../data/streetLevelImages/  //'20150729-150729_0521-{cameraId}-00003_0000{panoId}.jpg' // 'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' // '20150729-150729_0521-{cameraId}-00005_0000{panoId}.jpg'// 'Paris2015-141106_0725-{cameraId}-00004_0000{panoId}.jpg' // Paris2015-141106_0725-00-00004_0000546 //'Paris-140606_0713-{cameraId}-00001_0000{panoId}.jpg' //  // 2 Zero to remove 'CalibV4-140407_0566-{cameraId}-00008_0000{panoId}.jpg' // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' // 'Paris2015-150123_0593-{cameraId}-00004_0000{panoId}.jpg'//'Paris-150630_0723-{cameraId}-00005_0000{panoId}.jpg'  // 'CalibV4-140407_0566-{cameraId}-00006_0000{panoId}.jpg' 
                     });
 
                 // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
@@ -1660,10 +1506,11 @@
 	            raycaster.setFromCamera( mouse, view.camera.camera3D );
                 // calculate objects intersecting the picking ray
                 var intersects = raycaster.intersectObjects(sceneAllCams.children, true);  // "true" for recursive raycast
-                for ( var i = 0; i < intersects.length; i++ ) {
-                    activateCamHelper(intersects[ i ].object.parent);
+                if(intersects.length && intersects.length > 0){
+                    activateCamHelper(intersects[ 0 ].object.parent);
                     firstMoveOut = true;
                 }
+               
                 if (intersects.length == 0 && firstMoveOut && !scalingOffisOn){
                     firstMoveOut = false;
                     scalingOffCamHelpers();
@@ -1942,9 +1789,6 @@
                 view.scene.add(cameraHelper);
                 cameraHelper.updateMatrixWorld(true);
             }
-
-
-
 
 
         </script>
