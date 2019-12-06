@@ -831,6 +831,7 @@
                     map: new itowns.THREE.TextureLoader().load(cam.name), // new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
                     opacity:currentOpacity,
                     transparent:true,
+                    side: THREE.DoubleSide
                 });
 
                 setMaterial(textureMaterialP, cam);
