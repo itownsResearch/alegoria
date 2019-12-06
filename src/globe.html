@@ -58,6 +58,8 @@
             var posInit = urlpage.searchParams.get("pos");
             var wfsInURL = urlpage.searchParams.get("wfs");
             if(posInit) posInit = posInit.split(",");
+
+            var defaultWFSCamera = 'alegoria5';
             //console.log(imName, "  ", posInit);
 
             var orientedImageLayer;
@@ -108,11 +110,21 @@
 
             // Alex modifications to handle multiple images
             var arrayImages = [];
-            arrayImages = [{image: 'LOC-04753X.jpg', distance: 350, opacity: 1, plane:null},
-            {image: 'notredame.jpg', distance: 350, opacity: 1, plane:null},
-            {image: 'rueVieilleDuTemple8.jpg', distance: 600, opacity: 1, plane:null},
-            {image: 'planNotreDame.jpg', distance: 350, opacity: 1, plane:null},
-            {image: 'plandetailleCite.jpg', distance: 350, opacity: 1, plane:null},
+            arrayImages = [{image: '1957_DUR_452_0007.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0009.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0010.jpg', distance: 600, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0011_1.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0012.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0013.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0014.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0015.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0016.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0017.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0018.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0019.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0020.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0021.jpg', distance: 350, opacity: 1, plane:null},
+            {image: '1957_DUR_452_0022.jpg', distance: 350, opacity: 1, plane:null},
             {image: 'pontlouisphilippe.jpg', distance: 350, opacity: 1, plane:null},
             {image: '1919_CAF_C-1_0012.jpg', distance: 350, opacity: 1, plane:null}, 
             {image: '1951_DUR_208_0007.jpg', distance: 350, opacity: 1, plane:null},
@@ -311,21 +323,24 @@
 
             // Handles PVA representation when received from WFS
             // Load image and project it on the ground using the image properties
-            function workWithMesh(m){
+            function workWithMesh(m, projectionCode){
                 
                 //console.log(m);
                 m.material.size = 25;
                 for (var i = 0; i < m.feature.geometry.length; ++i){
                     // Let's download the image
                     var prop = m.feature.geometry[i].properties;
-                    var imgName = prop.name;
+                    var imgName = prop.name; console.log(prop);
                     
                     // We check if already image displayed we don't treat it
                     if(arrLoadedCameraNames.includes(imgName)) return 0;
 
                     arrLoadedCameraNames.push(imgName);
                     //https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/2324-0191/IGNF_PVA_1-0__1947-04-10__C2324-0191_1947_CDP2368_0002.jp2&LYR=20&WID=200&CVT=JPEG
-                    var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
+                    // Dessous: url fonctionnant pour les PVA IGN en jp2 servies par le Geoportail
+                    // var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
+                    var url = "../data/" + imgName;
+                  
                     //url = "IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826_xs.jpg";  // temp for test
                     //console.log(url);
                     // Temp to test with cropped image (Giordano)
@@ -362,9 +377,14 @@
                     var pos = new THREE.Vector3().fromArray(m.feature.vertices.slice(i * 3, i * 3 + 3)); // console.log(pos); console.log(view.camera.camera3D.position); 
                     cameraP.position.copy(pos);
 
-                    var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
-                    var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS("EPSG:2154", "EPSG:4978")(coords);
-                    quaternion.premultiply(quat_crs2crs);
+                    // Here we need to check the coordinate system of the received camera
+                    // If already EPSG:4978, nothing to do. If other, we need to compute the new orientation in our scene system (4978)
+                    if(projectionCode != 'EPSG:4978'){
+                        var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
+                        var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS(projectionCode, "EPSG:4978")(coords);
+                        quaternion.premultiply(quat_crs2crs);
+                    }
+
                     cameraP.quaternion.copy(quaternion);
 
                     if(url.includes("843")) {console.log("CAM 843: cameraP: ",cameraP, "prop: ", prop);
@@ -392,8 +412,8 @@
                 url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
                 protocol:'wfs',
                 version: '2.0.0',
-                typeName: wfsInURL || 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
-                projection: 'EPSG:4326',
+                typeName: wfsInURL || defaultWFSCamera, // 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
+                projection: 'EPSG:4978',
                 fetcher: itowns.Fetcher.json,
                 parser: itowns.GeoJsonParser.parse,
                 ipr: 'Alegoria',
@@ -408,7 +428,7 @@
                 convert: itowns.Feature2Mesh.convert({
                     playWithProperties: playWithProperties,
                     color: new itowns.THREE.Color() }),
-                onMeshCreated: function(mesh){workWithMesh(mesh);},//workWithMesh(mesh),
+                onMeshCreated: function(mesh){workWithMesh(mesh,'EPSG:4978');},//workWithMesh(mesh),
                 source: wfsGeoserverSource
             });
             view.addLayer(wfsGeoserverLayer);
@@ -681,8 +701,9 @@
             }
 
 
+            // Function to export the photogrammetric camera to the Database through WFS
             function saveCamToWFS(){
-                exportToWFS(camera, "frejus");
+                exportToWFS(camera, "alegoria5");
             }
 
             // Uncomment playvideo
@@ -756,6 +777,7 @@
 
                 // Dirty mod to handle previous version with the new DB WFS one
                 if(cam.name === ""){ // Old School XMl
+
                     console.log("cam.name  null", cam);
                     if(pictureInfos.plane == null){
                         plane = setupPictureFromCamera(camera, '../data/' + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
@@ -764,6 +786,7 @@
                         plane = pictureInfos.plane;
                     }
                     plane.visible = false;
+                    cam.name = cam.originalName = pictureInfos.image;
                     textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
                 }else{  // WFS Mode
                     // We update the image with a bigger resolution
@@ -799,7 +822,7 @@
             // Function that create cameraHelper with all the properties of the oriented image
             // Picking on it to associate camera scene
             function createCameraHelper(cam){
-            
+                // console.log(cam);
                 // Concerning the texture, Ideally we initiate with a low res (thumbnail) and then
                 // when the user chooses that camera it'll load HiRes. 
                 // Low res should be found using camera name + "lowres".jpg for example or more dynamically 
@@ -821,7 +844,7 @@
                 // view.scene.add(cam);  
             }
 
-
+/*
             // If no initial position passed in the URL we launch the first registered image
             if(! posInit && arrayImages.length > 0){
                 // fetch orientation file
@@ -831,14 +854,13 @@
                     .then(data => MicmacOrientationParser.parse(data, source))
                     .then(handleOrientation);
             }
+*/
+
 
             function updatePlaneDistance(value) {
 
-                // transformTexturedPlane(camera, value, plane);//, pictureInfos.opacity);
                 currentDistance = value;
                 var scale = value / 100;
-                //camHelper.scale.set(scale,scale,scale);
-                //camHelper.updateMatrixWorld();
                 currentObjUnderMouse.scale.set(scale,scale,scale);
                 view.notifyChange(view.camera.camera3D);
             }
@@ -907,7 +929,7 @@
                 var obj8 = { parallax: 0.};
                 var obj9 = { activateStreetLevel: function(){ activateStreetLevel() }};
                 var obj10 = { resectionAuto: function(){ computeResectionFullAuto() }};
-                var obj11 = { activateVideo: function(){ saveCamToWFS() /* playVideo(); */ }};
+                var obj11 = { saveRegistration: function(){ saveCamToWFS() /* playVideo(); */ }};
                 
                 navImageGUI.add(obj,'next');
                 navImageGUI.add(obj2,'projectOnBuildings');
@@ -919,7 +941,7 @@
                 navImageGUI.add(obj8,'parallax', 0., 1.).onChange(function setParallaxValue(value){textureMaterial.uniforms.parallax.value = value; view.notifyChange();});
                 navImageGUI.add(obj9,'activateStreetLevel');
                 navImageGUI.add(obj10,'resectionAuto');
-                navImageGUI.add(obj11,'activateVideo');
+                navImageGUI.add(obj11,'saveRegistration');
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -1560,6 +1582,7 @@
                 scaleCamHelper();
             }
 
+
             function scaleCamHelper(){
                 
                if(currentObjUnderMouse.scale.x < 10){
@@ -1570,21 +1593,20 @@
                 }
             }
 
+
             function scalingOffCamHelpers(){ 
                 scalingOffisOn = true;
                 // console.log('scalingOff', nbToModify);
                 nbToModify = 0;
-
                 for(var i = 0; i < sceneAllCams.children.length; ++i){
                     var o = sceneAllCams.children[i].children[0];
-                   if(o.scale.x > 1){
+                   if(o.scale.x > 4){
                         o.scale.addScalar(-0.4);
                         o.updateMatrixWorld();
                         view.notifyChange();
                         nbToModify = 1;
                     }
                 }
-
                 if(nbToModify > 0){
                     scaleOff = true;
                     requestAnimationFrame( scalingOffCamHelpers );
@@ -1592,7 +1614,6 @@
                 else{
                     firstMoveOut = false; scaleOff = false; scalingOffisOn = false;
                 }
-
             }
             
 

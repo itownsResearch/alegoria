@@ -81,8 +81,10 @@ function exportToWFS(cam, tableName){
        var p = cam.point;
        var s = cam.view;
        var d = cam.distos[0];
+       if(d == undefined) {d = {R : new THREE.Vector4(), C : new THREE.Vector2()};}
        var name = cam.originalName; // cam.name; // Beware of url vs name
        var pos = cam.position;
+       //                                 <id> '+ Math.floor(Math.random() * 100000) + ' </id>\
        // Sending the transaction to the WFS
        var url_0 = 'http://134.158.74.36:8080/geoserver/wfs'; // 'http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';       
        var data3 = '<wfs:Transaction service="WFS" version="1.0.0"\
@@ -94,7 +96,7 @@ function exportToWFS(cam, tableName){
                        <wfs:Insert>\
                            <' + tableName + '>\
                                <point>\
-                                   <gml:Point srsName="http://www.opengis.net/gml/srs/epsg.xml#2154">\
+                                   <gml:Point srsName="http://www.opengis.net/gml/srs/epsg.xml#4978">\
                                        <gml:coordinates xmlns:gml="http://www.opengis.net/gml" decimal="." cs="," ts=" ">' + pos.x +','+ pos.y +','+ pos.z + '</gml:coordinates>\
                                    </gml:Point>\
                                </point>\
