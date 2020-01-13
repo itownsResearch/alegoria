@@ -84,6 +84,7 @@ function exportToWFS(cam, tableName){
        if(d == undefined) {d = {R : new THREE.Vector4(), C : new THREE.Vector2()};}
        var name = cam.originalName; // cam.name; // Beware of url vs name
        var pos = cam.position;
+       var epsg = 4978;  // Default epsg
        //                                 <id> '+ Math.floor(Math.random() * 100000) + ' </id>\
        // Sending the transaction to the WFS
        var url_0 = 'http://134.158.74.36:8080/geoserver/wfs'; // 'http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';       
@@ -120,6 +121,7 @@ function exportToWFS(cam, tableName){
                                <cm>' + d.R.w  + '</cm>\
                                <cx>' + d.C.x  + '</cx>\
                                <cy>' + d.C.y  + '</cy>\
+                               <epsgquaternion>' + epsg  + '</epsgquaternion>\
                            </' + tableName + '>\
                        </wfs:Insert>\
                        </wfs:Transaction>';

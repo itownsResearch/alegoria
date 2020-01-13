@@ -144,7 +144,7 @@ body {
     margin-right: 20px;
     position: absolute;
     left: 20;
-    bottom: 0;
+    bottom: 210;
     color: white;
 }
 #info {
@@ -171,7 +171,7 @@ body {
     sans-serif;
     font-size: 12px;
     left: 0;
-    bottom: -30;
+    bottom: 180;
 }
 .buttonX {
     background-color: #4CAF50; /* Green */

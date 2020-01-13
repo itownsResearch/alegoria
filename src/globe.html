@@ -17,6 +17,18 @@
                         <br> 
                         <a href="http://www.archives-nationales.culture.gouv.fr/" target="_blank"> Images: Archives Nationales </a>
                 </p>
+                <div class="container" id="containerIMG" style="display: grid;
+                                                            color: white;
+                                                            position: absolute;
+                                                            bottom: 0;
+                                                            right: 0;
+                                                            border: 4px white solid; 
+                                                            height:200px; 
+                                                            width: 100%;
+                                                            margin: 0;
+                                                            padding: 0;
+                                                            overflow: auto">
+                </div> 
             <div id="miniDiv">
                 <img id="img"  onmousedown="getImgCoordOnClick(event)">
             </div>
@@ -32,6 +44,7 @@
         <script src="../../itowns/examples/js/GUI/GuiTools.js"></script>
         <script src="../../itowns/dist/itowns.js"></script>
         <script src="../../itowns/examples/js/GUI/LoadingScreen.js"></script>
+        <script src="../../itowns/examples/js/plugins/FeatureToolTip.js"></script>
         <script src="../../photogrammetric-camera/dist/three-photogrammetric-camera.js"></script>
         <!--    <script src="../../itowns/examples/js/ThreeLoader.js"></script>   -->
         <script src="../../itowns/dist/debug.js"></script>
@@ -109,6 +122,9 @@
             var imageSourcesInfo; // Object created at initialization getting infos through WFS on images url and other stuff
             var imageSourcesInfoDico = {};
 
+            // Images from Archives Nationales
+            var imagesArchivesDico = {}; 
+
             // var arrAppariementScene = [];
             // var arrAppariementOld = [];
 
@@ -161,11 +177,11 @@
 
             // Instanciate iTowns view
             var placement = {
-                    coord: new itowns.Coordinates('EPSG:4326',  2.34, 48.86),
-                    range: 1000,
+                    coord: new itowns.Coordinates('EPSG:4326',  positionOnGlobe.longitude , positionOnGlobe.latitude),
+                    range: positionOnGlobe.altitude,
                     tilt: 45,
                     heading: -60
-                }
+            };
             var view = new itowns.GlobeView(viewerDiv, placement,{handleCollision: false, noControls: false});
             view.camera.camera3D.near = 0.4;
 
@@ -176,6 +192,7 @@
 
             //3D point number
             var ptname = 0;
+            loadImageSources();
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -351,12 +368,12 @@
                     //https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/2324-0191/IGNF_PVA_1-0__1947-04-10__C2324-0191_1947_CDP2368_0002.jp2&LYR=20&WID=200&CVT=JPEG
                     // Dessous: url fonctionnant pour les PVA IGN en jp2 servies par le Geoportail
                     // var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
-                    var url = "../data/" + imgName;
+                    var url = "../data/" + imgName;  // Default url (imported image from user for registration)
                     //  if(imgName.includes("IGNF_PVA"))
                     //     url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
 
                     // We construct the url using the source table
-                    // imageSourcesInfoDico is alreadry constructed using the source table
+                    // imageSourcesInfoDico is already constructed using the source table
                     if(source != null){ 
                         var propSource = imageSourcesInfoDico['sources.' + source];  console.log("poooooop", propSource);
                         if(propSource.iip != null)  // ex iip: "https://wxs.ign.fr/{key}/iipsrv.fcgi?FIF=DEMAT.PVA/{rlt}_{image}.jp2"
@@ -405,7 +422,7 @@
 
                     // Here we need to check the coordinate system of the received camera
                     // If already EPSG:4978, nothing to do. If other, we need to compute the new orientation in our scene system (4978)
-                    if(epsgquaternion != 4978){  // projectionCode 
+                    if(epsgquaternion != undefined && epsgquaternion != 4978){  // projectionCode 
                         var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
                         var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS('EPSG:' + epsgquaternion, "EPSG:4978")(coords);
                         quaternion.premultiply(quat_crs2crs);
@@ -433,7 +450,156 @@
                 console.log(properties);
             }
 
-            // Test with geoserver Mathieu
+
+
+            
+            // Access archives_nationales WFS
+            var wfsGeoserverSourceAN = new itowns.WFSSource({
+                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                protocol:'wfs',
+                version: '2.0.0',
+                typeName: 'archives_nationales', // 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
+                projection: 'EPSG:4326',
+                fetcher: itowns.Fetcher.json,
+                parser: itowns.GeoJsonParser.parse,
+                ipr: 'Alegoria',
+                format: 'json',
+                zoom: { min: 14, max: 14 },
+                networkOptions: {crossOrigin: ''}
+            });
+
+            var wfsGeoserverLayerAN = new itowns.GeometryLayer('WFS Geoserver Archives Nationales', new itowns.THREE.Group(), {
+                update: itowns.FeatureProcessing.update,
+                convert: itowns.Feature2Mesh.convert({
+                    playWithProperties: playWithProperties,
+                    color: new itowns.THREE.Color() }),
+                overrideAltitudeInToZero: true,
+                onMeshCreated: function(mesh){showImageInfo(mesh,'EPSG:4326');},
+                source: wfsGeoserverSourceAN
+            });
+            view.addLayer(wfsGeoserverLayerAN);
+
+
+            
+            // What do we do with archives images (not registered a priori)
+            function showImageInfo(m, proj){
+                for (var i = 0; i < m.feature.geometry.length; ++i){
+
+                    //if(arrImagesArchives.imgName return 0;
+                    
+                    var prop = m.feature.geometry[i].properties;
+                    if(imagesArchivesDico[prop.jpeg] == undefined){
+                        imagesArchivesDico[prop.jpeg] = prop;
+                        //console.log(m.feature.geometry[i], prop);
+                        var pos = new itowns.Coordinates('EPSG:4326',  prop.longitude , prop.latitude, 250).as('EPSG:4978');
+                        var geometry = new itowns.THREE.SphereGeometry( 80, 4, 4 );
+                        var material = new itowns.THREE.MeshBasicMaterial( {color:new itowns.THREE.Color(0XFF0000), transparent:true, opacity:0.1} );
+                        var sphere = new itowns.THREE.Mesh( geometry, material );
+                        sphere.position.set(pos.x, pos.y, pos.z); // console.log(sphere.position);
+                        sphere.updateMatrixWorld();
+                        view.scene.add( sphere );
+
+                        handleThumbnails(prop);//.jpeg);
+                    }
+                }
+                console.log(imagesArchivesDico);
+                view.notifyChange();
+                // m.material.size = 250;
+                // m.material.color = new THREE.Color('red');
+                // console.log(m);
+                var keys = Object.keys( imagesArchivesDico );
+                var imgOBJ = keys[0]; 
+                
+                //handleThumbnails(imgOBJ);
+            }
+
+
+            function handleThumbnails(prop){
+
+                var img = new Image(300, 170); //document.createElement('img'); 
+                img.src = "http://134.158.74.36/images/archives_nationales/" + prop.jpeg; // "http://134.158.74.36/images/archives_nationales/FRAN_0207_0155_L.jpg";
+                // img.nameAlegoria = img.src;
+                img.alegoriaProp = prop;
+                console.log(img.src);
+                /*document*/ 
+                var table = document.getElementById('myTable');
+                var nbRows = table.rows.length;
+                let currentRow;
+                if(nbRows < 1) // Happens only once
+                    currentRow = table.insertRow(-1);
+                    else
+                    currentRow = table.rows[0];
+
+                img.onload = function() {
+                    var col = currentRow.insertCell(0);
+                    col.appendChild(img); 
+                    img.addEventListener("click", displayImage);
+                };
+                
+            }
+
+
+            function displayImage(evt){
+                evt.cancelBubble = true;
+                var currentImgProp = evt.target.alegoriaProp;
+                console.log("click image", evt);
+            }
+
+            const layoutGrid = (height, width) => {
+                const container = document.getElementById('containerIMG');
+                container.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+                container.style.gridTemplateRows = `repeat(${height}, 1fr)`;
+                container.style.overflow = 'scroll;';
+                container.innerHTML = `<table id="myTable">
+                                       
+                                        </table>`
+
+            }
+
+            const fillGrid = (x, y, blockSize, numOfBlocks, color) => {
+                const container = document.getElementById('containerIMG');
+                const test = Array(numOfBlocks).keys();
+                        for (var i of test){
+                            let markup = `<div id="card${i}" 
+                                            style="grid-column: ${Math.floor(Math.random() * y) + 1} / span ${blockSize}; 
+                                                    grid-row: ${Math.floor(Math.random() * x) + 1} / span ${blockSize};
+                                                    background-color: ${color};
+                                                    border: 1px black solid;">${i}</div>`
+                            container.innerHTML += markup
+                        };
+            }
+
+
+/*
+            // Test raster version  (points feature seems they are not handled in rasterization)
+            var wfsGeoserverLayerANRASTER  = new itowns.ColorLayer('wfsGeoserverSourceAN', {
+                transparent: true,
+                style: {
+                    point: {
+                            color: 'white',
+                            line: 'green',
+                        }
+                 
+                },
+                //isValidData: isValidData,
+                source: wfsGeoserverSourceAN,
+            });
+            view.addLayer(wfsGeoserverLayerANRASTER);
+            FeatureToolTip.addLayer(wfsGeoserverLayerANRASTER, {
+                filterGeometries: function _(features, layer) {
+                    var idList = [];
+                    return features.filter(function _(f) {
+                        if (!idList.includes(f.geometry.properties.id)) {
+                            idList.push(f.geometry.properties.id);
+                            return f;
+                        }
+                    });
+                }
+            });
+*/
+
+
+            // Access to our Geoservers (On ISC) to get registered cameras  (ex alegoriaMerge2)
             var wfsGeoserverSource = new itowns.WFSSource({
                 url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
                 protocol:'wfs',
@@ -446,9 +612,9 @@
                 format: 'json',
                 zoom: { min: 10, max: 10 },
                 networkOptions: {crossOrigin: ''}
-              
             });
 
+            
             var wfsGeoserverLayer = new itowns.GeometryLayer('WFS Geoserver', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
@@ -491,7 +657,7 @@
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                loadImageSources();
+                //loadImageSources();
                 //updateScaleWidget();
                 // get 3D coordinates on mouse click
                 window.addEventListener('mousedown', pickPosition, false);
@@ -532,13 +698,18 @@
 
                 // load3DModel();
                 //sendWFST();
+                
+                // createGrid();
+                layoutGrid(5,5);
+               // fillGrid(5, 5, 4, 2, "green");
+
             });
 
 
             // Picking on buildings
             function pickingBuildings(event) {
                 var p3D = new itowns.THREE.Vector3();
-                if(view.controls.isPaused()) {
+                if(view.controls.isPaused) {
                     var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
                     if (intersects.length) {
                         //console.log(intersects[0].point);
@@ -754,7 +925,7 @@
 
             // Function to export the photogrammetric camera to the Database through WFS
             function saveCamToWFS(){
-                exportToWFS(camera, "alegoria5");
+                exportToWFS(camera, "alegoriaMerge2");  // Previously successfully tested with table alegoria5
             }
 
             // Uncomment playvideo
@@ -995,7 +1166,7 @@
                 navImageGUI.add(obj9,'activateStreetLevel');
                 navImageGUI.add(obj10,'resectionAuto');
                 navImageGUI.add(obj11,'saveRegistration');
-                navImageGUI.add(obj12,'date', 1940, 1980).onChange(function setDateValue(value){filterDates(value); view.notifyChange();});
+                navImageGUI.add(obj12,'date', 1940, 1980).onChange(function filterD(value){filterDates(value); view.notifyChange();});
                 view.notifyChange(view.camera.camera3D);
             }
 
@@ -1627,7 +1798,7 @@
                     onMouseClick(e);
             });
           
-            window.addEventListener('wheel', event => {mouseWheelOn = true; console.log("mouseWheeeeeel");});
+            window.addEventListener('wheel', event => {mouseWheelOn = true;});
 
             // Function to show dynamically the camHelper under the mouse
             function activateCamHelper(obj){
