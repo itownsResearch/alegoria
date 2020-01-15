@@ -74,7 +74,7 @@ function export3Dcoord(ptname,x,y,z) {
 // tableName for ex frejus
 // Beware of the coordinate system. By default, all is in geocentric coordinates 
 // as it is used in the 3D scene (orientation and position on earth (geocentric))
-function exportToWFS(cam, tableName){
+function exportToWFS(cam, tableName, source){
 
        var q = cam.quaternion;
        var f = cam.focal;
@@ -121,6 +121,7 @@ function exportToWFS(cam, tableName){
                                <cm>' + d.R.w  + '</cm>\
                                <cx>' + d.C.x  + '</cx>\
                                <cy>' + d.C.y  + '</cy>\
+                               <source>' + source  + '</source>\
                                <epsgquaternion>' + epsg  + '</epsgquaternion>\
                            </' + tableName + '>\
                        </wfs:Insert>\

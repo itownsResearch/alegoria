@@ -171,7 +171,38 @@ body {
     sans-serif;
     font-size: 12px;
     left: 0;
-    bottom: 180;
+    bottom: 176;
+}
+
+
+.gotolocation {
+    text-align: center;
+    display: block;
+    margin-top: 00px;
+    margin-left: 20px;
+    position: absolute;
+    color: black;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 12px;
+    right: 10;
+    top:10;
+}
+
+.metaDataDisplay {
+    text-align: center;
+    display: block;
+    margin-top: 00px;
+    margin-left: 20px;
+    position: absolute;
+    color: black;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    max-width: 450px;
+    background-color: rgba(255, 186, 186, 0.7);
+    right: 4;
+    bottom: 206;
 }
 .buttonX {
     background-color: #4CAF50; /* Green */
@@ -184,6 +215,13 @@ body {
     font-size: 12px;
     bottom: 0;
 }
+.thick-green-border {
+    border-color: green;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 50%;
+  }
+
 p { background-color:#FFFFFF; 
     color: black;
 }

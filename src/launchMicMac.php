@@ -1,6 +1,7 @@
 <?php
 
 $img_name = $_GET['imagename'];
+$path_to_data = $_GET['dir'];
 //Method to execute a command in the terminal
 function terminal($command)
 {
@@ -48,7 +49,7 @@ function terminal($command)
 
 //MicMac inputs
 $path_to_output = "../outputs/test";
-$path_to_data = "../data";
+//$path_to_data = "../data";
 //$img_name = "FRAN_0207_0628_L.jpg";
 $calib_file = "Ori-CalInit";
 $imagename = preg_replace('/\\.[^.\\s]{3,4}$/', '', $img_name);

@@ -7,6 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>  
     </head>
 
     <body>  
@@ -23,16 +24,27 @@
                                                             bottom: 0;
                                                             right: 0;
                                                             border: 4px white solid; 
-                                                            height:200px; 
+                                                            height:194px; 
                                                             width: 100%;
                                                             margin: 0;
                                                             padding: 0;
                                                             overflow: auto">
+                                                            <table id="myTable">
+                                       
+                                                            </table>
                 </div> 
             <div id="miniDiv">
                 <img id="img"  onmousedown="getImgCoordOnClick(event)">
             </div>
+
+
         </div>
+
+
+        <div class="gotolocation" tabindex="-1">
+            <input type="text" id="nameLocation" name="name" required minlength="1" size="20">
+        </div>
+    
 
         <form class="styleForm" method="post" enctype="multipart/form-data">
             <input type="file" name="files[]" multiple>
@@ -40,6 +52,7 @@
             <p  class="imageholder" id="countPoints"> Points registered: 0</p>
             <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
         </form>
+        <div id="metaData" class = "metaDataDisplay"></div>
 
         <script src="../../itowns/examples/js/GUI/GuiTools.js"></script>
         <script src="../../itowns/dist/itowns.js"></script>
@@ -121,9 +134,10 @@
             var mouseWheelOn = false;
             var imageSourcesInfo; // Object created at initialization getting infos through WFS on images url and other stuff
             var imageSourcesInfoDico = {};
-
+            var currentDATADirectory = "../data";
             // Images from Archives Nationales
             var imagesArchivesDico = {}; 
+            var currentSource = 10;  // Name of the source of the image we register (alex (10) is default, other can be archives_nationales  (5) for example)
 
             // var arrAppariementScene = [];
             // var arrAppariementOld = [];
@@ -163,13 +177,12 @@
             // 48.8365154,-3.3129326 ( rocher de la sentinelle)   // fprca: 43.9595975,5.7772372,
 
             itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-            var positionOnGlobe = { longitude:2.33, latitude: 48.83, altitude: 1878.615379151888 };
+            var positionOnGlobe = { longitude:-2.238466, latitude: 46.96861820, altitude: 800 };
             if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
             //console.log(positionOnGlobe);
             //var miniView;
             var minDistance = 10000000;
             var maxDistance = 30000000;
-
             var meshes = [];
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
@@ -193,6 +206,15 @@
             //3D point number
             var ptname = 0;
             loadImageSources();
+
+            $(document).ready(function() {
+                $("#containerIMG").mousewheel(function(e, delta) {
+                this.scrollLeft -= (delta * 200);
+                //e.preventDefault();
+                });
+            });
+
+            //testGeocoding("bordeaux");
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -250,6 +272,56 @@
                     return color.set(0xff5555);
                 }
                 return color.set(0xeeeeee);
+            }
+
+
+            function testGeocoding(lieudit){
+/*
+                var url = "https://wxs.ign.fr/3ht7xcw6f7nciopo1etuqp2/geoportail/ols?";
+
+                var formData = `<?xml version="1.0" encoding="UTF-8"?>
+                            <XLS
+                            xmlns:xls="http://www.opengis.net/xls"
+                            xmlns:gml="http://www.opengis.net/gml"
+                            xmlns="http://www.opengis.net/xls"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="1.2"
+                            xsi:schemaLocation="http://www.opengis.net/xls http://schemas.opengis.net/ols/1.2/olsAll.xsd">
+                                <RequestHeader/>
+                                <Request requestID="1" version="1.2" methodName="LocationUtilityService">
+                                <GeocodeRequest returnFreeForm="false">
+                                    <Address countryCode="PositionOfInterest">
+                                            <freeFormAddress>rennes</freeFormAddress>
+                                    </Address>
+                                </GeocodeRequest>
+                                </Request>
+                            </XLS>`;
+*/
+
+                var url = "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/look4/user/search?indices=locating&method=prefix&types=address%2Cposition%2Ctoponyme%2Cw3w&nb=1&match%5Bfulltext%5D="+ lieudit;
+                
+                fetch(url)
+                .then((response) => {
+                    return response.json();
+                })
+                .then((myJson) => {
+                   // console.log(myJson);
+
+                    var coordArray = myJson.features[0].geometry.coordinates;
+                    console.log(coordArray);
+                    var pathTravel = [];
+                    var timeTravel = 5000;
+                    pathTravel.push({ range: 100000, time: timeTravel/2 , tilt: 80, heading: -50 });
+                    pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', coordArray[0], coordArray[1]), range: 50000, time: timeTravel });
+                    pathTravel.push({ range: 1400, time: timeTravel , tilt: 50, heading: -110 });
+                    travel(pathTravel);
+                });
+
+            }
+            
+            function travel(pathTravel) {
+                var camera = view.camera.camera3D;
+                return itowns.CameraUtils.sequenceAnimationsToLookAtTarget(view, camera, pathTravel);
             }
 
             function modifyAppearance(mesh){
@@ -356,10 +428,11 @@
                 m.material.size = 25;
                 for (var i = 0; i < m.feature.geometry.length; ++i){
                     // Let's download the image
+                    console.log(m.feature.geometry[i].properties.name);
                     var prop = m.feature.geometry[i].properties;
-                    var imgName = prop.name; console.log(prop);
+                    var imgName = prop.name; //console.log(prop);
                     var epsgquaternion = prop.epsgquaternion;
-                    var source = prop.source; console.log(source);
+                    var source = prop.source; console.log(imgName, epsgquaternion);
                     
                     // We check if already image displayed we don't treat it
                     if(arrLoadedCameraNames.includes(imgName)) return 0;
@@ -375,16 +448,19 @@
                     // We construct the url using the source table
                     // imageSourcesInfoDico is already constructed using the source table
                     if(source != null){ 
-                        var propSource = imageSourcesInfoDico['sources.' + source];  console.log("poooooop", propSource);
+                        var propSource = imageSourcesInfoDico['sources.' + source];   console.log("poooooop", propSource);
                         if(propSource.iip != null)  // ex iip: "https://wxs.ign.fr/{key}/iipsrv.fcgi?FIF=DEMAT.PVA/{rlt}_{image}.jp2"
                             url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
                             else if(propSource.highres != null)
                                 url = propSource.highres.replace('{name}', imgName);//replace(/{name}/gi, )
-                                else url = "../data/" + imgName;
+                                else if(propSource.url != null) 
+                                    url = propSource.url + imgName;
+                                    else
+                                        url = "../data/" + imgName;
                     }
                     
                     //url = "IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826_xs.jpg";  // temp for test
-                    //console.log(url);
+                    console.log(url);
                     // Temp to test with cropped image (Giordano)
                     //  if(url.includes("843"))
                      //   url ="http://134.158.74.36/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
@@ -502,7 +578,7 @@
                         handleThumbnails(prop);//.jpeg);
                     }
                 }
-                console.log(imagesArchivesDico);
+                // console.log(imagesArchivesDico);
                 view.notifyChange();
                 // m.material.size = 250;
                 // m.material.color = new THREE.Color('red');
@@ -520,31 +596,61 @@
                 img.src = "http://134.158.74.36/images/archives_nationales/" + prop.jpeg; // "http://134.158.74.36/images/archives_nationales/FRAN_0207_0155_L.jpg";
                 // img.nameAlegoria = img.src;
                 img.alegoriaProp = prop;
-                console.log(img.src);
+                //console.log(img.src);
                 /*document*/ 
                 var table = document.getElementById('myTable');
                 var nbRows = table.rows.length;
                 let currentRow;
                 if(nbRows < 1) // Happens only once
                     currentRow = table.insertRow(-1);
-                    else
+                else
                     currentRow = table.rows[0];
 
                 img.onload = function() {
                     var col = currentRow.insertCell(0);
                     col.appendChild(img); 
                     img.addEventListener("click", displayImage);
+                    img.addEventListener("mouseenter", displayMetaData);
                 };
                 
             }
 
 
+            // This function displays the selected image (thumbnail) in bigger to make the resection
             function displayImage(evt){
                 evt.cancelBubble = true;
                 var currentImgProp = evt.target.alegoriaProp;
-                console.log("click image", evt);
+                console.log("click image", currentImgProp);
+                currentDATADirectory = "../../images/archives_nationales";
+                currentSource = 5;
+                document.getElementById('img').src =  "http://134.158.74.36/images/archives_nationales/" + currentImgProp.jpeg;
+
+                // Then we create (initialize) the 4 xml files needed. Ground points, 2D image point, camera calibration and the micmac chantier descriptor
+                setTimeout(function() {   // Ugly timer cause src change/affectation takes time and no callback used
+                    arrayImages.unshift(  {image: currentImgProp.jpeg, distance: 100, opacity: 1, plane:null} );
+                    initXML2D();
+                    initXML3D();
+                    createCalib(); // We create a calibration file knowing just the image size 
+                    createMicmacChantierDescripteur(); // We create the micmac chantier descriptor
+                    }, 1000);
             }
 
+
+            function displayMetaData(evt){
+                var currentImgProp = evt.target.alegoriaProp;
+                var divMeta = document.getElementById('metaData');
+               // if(currentImgProp.description == null) currentImgProp.description = "";
+               // if(currentImgProp.city == null) currentImgProp.city = "";
+
+                var desc = currentImgProp.number + " | " + currentImgProp.cote + " | " + currentImgProp.mission + " | " + 
+                currentImgProp.dpt_new + " | " + currentImgProp.support + " | " + currentImgProp.producer + " | " +
+                currentImgProp.description + " | " + currentImgProp.city + " | " + currentImgProp.jpeg + " | " +
+                currentImgProp.latitude + " | " + currentImgProp.longitude;
+                const regex = /\| null/gi;
+                divMeta.innerHTML = desc.replace(regex, "");
+                //JSON.stringify(currentImgProp);
+            }
+/*
             const layoutGrid = (height, width) => {
                 const container = document.getElementById('containerIMG');
                 container.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
@@ -568,7 +674,7 @@
                             container.innerHTML += markup
                         };
             }
-
+*/
 
 /*
             // Test raster version  (points feature seems they are not handled in rasterization)
@@ -610,7 +716,7 @@
                 parser: itowns.GeoJsonParser.parse,
                 ipr: 'Alegoria',
                 format: 'json',
-                zoom: { min: 10, max: 10 },
+                zoom: { min: 7, max: 7 },
                 networkOptions: {crossOrigin: ''}
             });
 
@@ -618,7 +724,7 @@
             var wfsGeoserverLayer = new itowns.GeometryLayer('WFS Geoserver', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
-                    playWithProperties: playWithProperties,
+                    //playWithProperties: playWithProperties,
                     color: new itowns.THREE.Color() }),
                 onMeshCreated: function(mesh){workWithMesh(mesh,'EPSG:4978');},//workWithMesh(mesh),
                 source: wfsGeoserverSource
@@ -643,7 +749,7 @@
                                     var feat = imageSourcesInfo.features[i];
                                     imageSourcesInfoDico[feat.id] = feat.properties;
                                 }
-                                 console.log(imageSourcesInfo, imageSourcesInfoDico);
+                                 // console.log(imageSourcesInfo, imageSourcesInfoDico);
                             });
                         }
                     ).catch(function(err) {
@@ -700,7 +806,7 @@
                 //sendWFST();
                 
                 // createGrid();
-                layoutGrid(5,5);
+               // layoutGrid(5,5);
                // fillGrid(5, 5, 4, 2, "green");
 
             });
@@ -725,11 +831,12 @@
             const form = document.querySelector('form');
 
             form.addEventListener('submit', e => {
+                currentDATADirectory = "../data";
+                currentSource = 10; // default alex source
                 e.preventDefault();
 
                 const files = document.querySelector('[type=file]').files;
                 const formData = new FormData();
-
 
                 for (let i = 0; i < files.length; i++) {
                     let file = files[i];
@@ -742,7 +849,7 @@
                     body: formData
                 }).then(response => {
                     console.log(response);
-                    document.getElementById("img").src= "../data/" + files[0].name;  // Get displayed image name
+                    document.getElementById("img").src = "../data/" + files[0].name;  // Get displayed image name
                     
                     
                     // Then we create (initialize) the 4 xml files needed. Ground points, 2D image point, camera calibration and the micmac chantier descriptor
@@ -806,7 +913,7 @@
                     }
                 };
 
-                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName, true);
+                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName + "&dir=" + currentDATADirectory, true);
                 xmlhttp.send();
             }
             
@@ -829,7 +936,7 @@
                         if(show) showResection();
                     }
                 };
-                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName, true);
+                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName + "&dir=" + currentDATADirectory, true);
                 xmlhttp.send();
             }
 
@@ -925,7 +1032,7 @@
 
             // Function to export the photogrammetric camera to the Database through WFS
             function saveCamToWFS(){
-                exportToWFS(camera, "alegoriaMerge2");  // Previously successfully tested with table alegoria5
+                exportToWFS(camera, "alegoriaMerge2", currentSource);  // Previously successfully tested with table alegoria5
             }
 
             // Uncomment playvideo
@@ -1002,14 +1109,14 @@
 
                     console.log("cam.name  null", cam);
                     if(pictureInfos.plane == null){
-                        plane = setupPictureFromCamera(camera, '../data/' + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
+                        plane = setupPictureFromCamera(camera, currentDATADirectory + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
                         pictureInfos.plane = plane; console.log("picturesinfos.planeee: ", plane);
                     }else{
                         plane = pictureInfos.plane;
                     }
                     plane.visible = false;
                     cam.name = cam.originalName = pictureInfos.image;
-                    textureMaterial.map = new itowns.THREE.TextureLoader().load('../data/' + pictureInfos.image);
+                    textureMaterial.map = new itowns.THREE.TextureLoader().load(currentDATADirectory + "/" + pictureInfos.image);
                 }else{  // WFS Mode
                     // We update the image with a bigger resolution
                     console.log("cam.namecam.namecam.namecam.name: ",cam.name);
@@ -1844,18 +1951,45 @@
 
             document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
-                if(keyName === 'r') {
-                    if(!previewOn){
-                        previewOn = true;
-                        // save current scene camera position
-                        currentCameraScene = {quaternion: view.camera.camera3D.quaternion.clone(), scale: view.camera.camera3D.scale.clone(), position: view.camera.camera3D.position.clone()};
-                        //console.log(currentCameraScene);
-                        // Launch preview of last computed orientation
-                        previewResection();
-                    }
+                evt = event;
+                var target = evt.target || evt.srcElement;
+                var targetTagName = (target.nodeType == 1) ? target.nodeName.toUpperCase() : "";
+                //console.log(evt, targetTagName);
+
+                if(evt.key == "Enter") {  // We use geocoder...
+                    
+                    var lieu = document.getElementById("nameLocation").value;
+                    testGeocoding(lieu);
+                    
                 }
+
+                if ( !/INPUT|SELECT|TEXTAREA/.test(targetTagName) ) { 
+
+                        
+                    if(keyName === 'r') {
+                        if(!previewOn){
+                            previewOn = true;
+                            // save current scene camera position
+                            currentCameraScene = {quaternion: view.camera.camera3D.quaternion.clone(), scale: view.camera.camera3D.scale.clone(), position: view.camera.camera3D.position.clone()};
+                            //console.log(currentCameraScene);
+                            // Launch preview of last computed orientation
+                            previewResection();
+                        }
+                    }
+
+                }
+
+
             }, false);
 
+
+
+            console.log(document.activeElement);
+            document.addEventListener('mouseup', (event) => {
+                //document.focus();
+            }, false);
+
+    /*     
             document.addEventListener('keyup', (event) => {
                 const keyName = event.key;
                 if(keyName === 'r') {
@@ -1893,15 +2027,14 @@
             }, false);
           
             
-              /*********** Keyboard functions for preview of orientation ********************/
+              //Keyboard functions for preview of orientation 
               document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
                 if(keyName === 'c') {
                     centerCameraStreetView();
                 }
             }, false);
-
-
+    */
 
 
             // OrientedImage Helper from iTowns Examples JS code is now here and should be in a separate class but without itowns dep
