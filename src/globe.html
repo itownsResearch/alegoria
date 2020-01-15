@@ -637,14 +637,14 @@
 
                 evt.cancelBubble = true;
                 var currentImgProp = evt.target.alegoriaProp;
-                console.log("click image", currentImgProp);
+                //console.log("click image", currentImgProp);
                 // console.log(sceneAllCams.children);
 
                 // We first check if image is registered or not using a WFS request (TOTO)
                 // temporarly for a test, we just check the already loaded CameraImage 
                 if(arrLoadedCameraNames.includes(currentImgProp.jpeg)){
 
-                    console.log('Image ' + currentImgProp.jpeg + 'already georeferenced');
+                    //console.log('Image ' + currentImgProp.jpeg + 'already georeferenced');
                     var sceneCAMS = sceneAllCams.children;
                     var camImg;
                     var a = 0;
