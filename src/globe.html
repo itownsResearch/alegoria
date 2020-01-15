@@ -33,6 +33,9 @@
                                        
                                                             </table>
                 </div> 
+
+            <button id="buttonHideShow" class="styleButton" onclick="hideShow()">_</button>
+
             <div id="miniDiv">
                 <img id="img"  onmousedown="getImgCoordOnClick(event)">
             </div>
@@ -214,6 +217,18 @@
                 });
             });
 
+            function hideShow() {
+                var x = document.getElementById("img");
+                var button = document.getElementById("buttonHideShow");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                    button.innerHTML = '_';
+                } else {
+                    x.style.display = "none";
+                    button.innerHTML = '▢';
+                }
+            }
+
             //testGeocoding("bordeaux");
 
             // Add one imagery layer to the scene
@@ -311,7 +326,7 @@
                     console.log(coordArray);
                     var pathTravel = [];
                     var timeTravel = 5000;
-                    pathTravel.push({ range: 100000, time: timeTravel/2 , tilt: 80, heading: -50 });
+                    pathTravel.push({ range: 100000, time: timeTravel/2 , tilt: 80, heading: -50});
                     pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', coordArray[0], coordArray[1]), range: 50000, time: timeTravel });
                     pathTravel.push({ range: 1400, time: timeTravel , tilt: 50, heading: -110 });
                     travel(pathTravel);
@@ -616,23 +631,49 @@
             }
 
 
-            // This function displays the selected image (thumbnail) in bigger to make the resection
+            // This function displays the selected image (thumbnail) in bigger to make the resection 
+            // OR if already registered direclty in front of CameraIMAGE
             function displayImage(evt){
+
                 evt.cancelBubble = true;
                 var currentImgProp = evt.target.alegoriaProp;
                 console.log("click image", currentImgProp);
-                currentDATADirectory = "../../images/archives_nationales";
-                currentSource = 5;
-                document.getElementById('img').src =  "http://134.158.74.36/images/archives_nationales/" + currentImgProp.jpeg;
+                // console.log(sceneAllCams.children);
 
-                // Then we create (initialize) the 4 xml files needed. Ground points, 2D image point, camera calibration and the micmac chantier descriptor
-                setTimeout(function() {   // Ugly timer cause src change/affectation takes time and no callback used
-                    arrayImages.unshift(  {image: currentImgProp.jpeg, distance: 100, opacity: 1, plane:null} );
-                    initXML2D();
-                    initXML3D();
-                    createCalib(); // We create a calibration file knowing just the image size 
-                    createMicmacChantierDescripteur(); // We create the micmac chantier descriptor
-                    }, 1000);
+                // We first check if image is registered or not using a WFS request (TOTO)
+                // temporarly for a test, we just check the already loaded CameraImage 
+                if(arrLoadedCameraNames.includes(currentImgProp.jpeg)){
+
+                    console.log('Image ' + currentImgProp.jpeg + 'already georeferenced');
+                    var sceneCAMS = sceneAllCams.children;
+                    var camImg;
+                    var a = 0;
+                    var found = false;
+                    while(a < sceneCAMS.length && !found){
+                        if(sceneCAMS[a].name.indexOf(currentImgProp.jpeg) >= 0 ){
+                            camImg = sceneCAMS[a];
+                            found = true;
+                        }                    
+                        a++;
+                    }
+                    handleOrientation(camImg);
+                }
+
+                else{   // We show the image in order for the user to register it
+ 
+                    currentDATADirectory = "../../images/archives_nationales";
+                    currentSource = 5;
+                    document.getElementById('img').src =  "http://134.158.74.36/images/archives_nationales/" + currentImgProp.jpeg;
+
+                    // Then we create (initialize) the 4 xml files needed. Ground points, 2D image point, camera calibration and the micmac chantier descriptor
+                    setTimeout(function() {   // Ugly timer cause src change/affectation takes time and no callback used
+                        arrayImages.unshift(  {image: currentImgProp.jpeg, distance: 100, opacity: 1, plane:null} );
+                        initXML2D();
+                        initXML3D();
+                        createCalib(); // We create a calibration file knowing just the image size 
+                        createMicmacChantierDescripteur(); // We create the micmac chantier descriptor
+                        }, 1000);
+                    }
             }
 
 
