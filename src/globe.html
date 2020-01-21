@@ -128,8 +128,8 @@
             var scaleOff = false;
             var nbToModify = 0;  // Ugly init for animation
             var scalingOffisOn = false;
-            var lowResValue = 128;
-            var highResValue = 2048;
+            var lowResValue = 32;
+            var highResValue = 256; // 2048;
             var arrLoadedCameraNames = [];
             var previewModeOn = false;  // To handle the loading of super low resolution image like 128*128
             var mouseDown = false;
@@ -519,6 +519,16 @@
                         quaternion.premultiply(quat_crs2crs);
                     }
 
+                    
+                    // Here we need to check the coordinate system of the received camera
+                    // If already EPSG:4978, nothing to do. If other, we need to compute the new orientation in our scene system (4978)
+                    if(epsgquaternion == undefined){  // projectionCode 
+                        var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
+                        var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS('EPSG:2154' /*+ projectionCode*/, "EPSG:4978")(coords);
+                        quaternion.premultiply(quat_crs2crs);
+                        //quaternion.multiply(new THREE.Quaternion(1,0,0,0));
+                    }
+
                     cameraP.quaternion.copy(quaternion);
 
                     if(url.includes("843")) {console.log("CAM 843: cameraP: ",cameraP, "prop: ", prop);
@@ -770,7 +780,36 @@
                 onMeshCreated: function(mesh){workWithMesh(mesh,'EPSG:4978');},//workWithMesh(mesh),
                 source: wfsGeoserverSource
             });
-            view.addLayer(wfsGeoserverLayer);
+       //     view.addLayer(wfsGeoserverLayer);
+
+
+
+            // Test all France Mathieu DB
+            // Access to our Geoservers (On ISC) to get registered cameras  (ex alegoriaMerge2)
+            var wfsGeoserverSourceTA = new itowns.WFSSource({
+                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                protocol:'wfs',
+                version: '2.0.0',
+                typeName: 'alegoria_ta2', //wfsInURL || defaultWFSCamera, // 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
+                projection: 'EPSG:2154',
+                fetcher: itowns.Fetcher.json,
+                parser: itowns.GeoJsonParser.parse,
+                ipr: 'Alegoria',
+                format: 'json',
+                zoom: { min: 12, max: 12 },
+                networkOptions: {crossOrigin: ''}
+            });
+
+            
+            var wfsGeoserverLayerTA = new itowns.GeometryLayer('WFS Geoserver', new itowns.THREE.Group(), {
+                update: itowns.FeatureProcessing.update,
+                convert: itowns.Feature2Mesh.convert({
+                    //playWithProperties: playWithProperties,
+                    color: new itowns.THREE.Color() }),
+                onMeshCreated: function(mesh){workWithMesh(mesh,'EPSG:2154');},//workWithMesh(mesh),
+                source: wfsGeoserverSourceTA
+            });
+            view.addLayer(wfsGeoserverLayerTA);
 
 
 
