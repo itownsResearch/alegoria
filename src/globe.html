@@ -128,8 +128,8 @@
             var scaleOff = false;
             var nbToModify = 0;  // Ugly init for animation
             var scalingOffisOn = false;
-            var lowResValue = 32;
-            var highResValue = 256; // 2048;
+            var lowResValue = 128;
+            var highResValue = 2048;
             var arrLoadedCameraNames = [];
             var previewModeOn = false;  // To handle the loading of super low resolution image like 128*128
             var mouseDown = false;
@@ -141,6 +141,9 @@
             // Images from Archives Nationales
             var imagesArchivesDico = {}; 
             var currentSource = 10;  // Name of the source of the image we register (alex (10) is default, other can be archives_nationales  (5) for example)
+
+            var thumbnailWidth = 300;
+            var thumbnailHeight = 165;
 
             // var arrAppariementScene = [];
             // var arrAppariementOld = [];
@@ -198,7 +201,7 @@
                     tilt: 45,
                     heading: -60
             };
-            var view = new itowns.GlobeView(viewerDiv, placement,{handleCollision: false, noControls: false});
+            var view = new itowns.GlobeView(viewerDiv, placement,{handleCollision: false, disableSkirt: false, noControls: false});
             view.camera.camera3D.near = 0.4;
 
             var sceneAllCams = new THREE.Object3D();  // Object containg all oriented images cam
@@ -388,7 +391,7 @@
                     west: -10,
                     east: 15.18,
                     south: 40.437,
-                    north: 49.03,
+                    north: 55,
                 },
             });
 
@@ -447,12 +450,13 @@
                     var prop = m.feature.geometry[i].properties;
                     var imgName = prop.name; //console.log(prop);
                     var epsgquaternion = prop.epsgquaternion;
-                    var source = prop.source; console.log(imgName, epsgquaternion);
+                    var source = prop.source; //console.log(imgName, epsgquaternion);
                     
                     // We check if already image displayed we don't treat it
                     if(arrLoadedCameraNames.includes(imgName)) return 0;
 
                     arrLoadedCameraNames.push(imgName);
+
                     //https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/2324-0191/IGNF_PVA_1-0__1947-04-10__C2324-0191_1947_CDP2368_0002.jp2&LYR=20&WID=200&CVT=JPEG
                     // Dessous: url fonctionnant pour les PVA IGN en jp2 servies par le Geoportail
                     // var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
@@ -474,6 +478,13 @@
                                         url = "../data/" + imgName;
                     }
                     
+                    
+                    // We check if image was inserted in database with extension ( avoid .jpg.jpg for example)
+                    url = url.replace(".jpg.jpg", ".jpg");
+
+                    // We now also add the image to the thumnails table (display them in 2d)
+                    handleThumbnails("",{jpeg:url}, true); 
+
                     //url = "IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826_xs.jpg";  // temp for test
                     console.log(url);
                     // Temp to test with cropped image (Giordano)
@@ -600,7 +611,7 @@
                         sphere.updateMatrixWorld();
                         view.scene.add( sphere );
 
-                        handleThumbnails(prop);//.jpeg);
+                        handleThumbnails("http://134.158.74.36/images/archives_nationales/", prop, false);//.jpeg);
                     }
                 }
                 // console.log(imagesArchivesDico);
@@ -610,19 +621,19 @@
                 // console.log(m);
                 var keys = Object.keys( imagesArchivesDico );
                 var imgOBJ = keys[0]; 
-                
-                //handleThumbnails(imgOBJ);
             }
 
 
-            function handleThumbnails(prop){
+            function handleThumbnails(urlSource, prop, georeferenced){
 
-                var img = new Image(300, 170); //document.createElement('img'); 
-                img.src = "http://134.158.74.36/images/archives_nationales/" + prop.jpeg; // "http://134.158.74.36/images/archives_nationales/FRAN_0207_0155_L.jpg";
+                var img = new Image(thumbnailWidth, thumbnailHeight); //document.createElement('img'); 
+                img.src = urlSource  + prop.jpeg; // "http://134.158.74.36/images/archives_nationales/FRAN_0207_0155_L.jpg";
                 // img.nameAlegoria = img.src;
                 img.alegoriaProp = prop;
+                if(georeferenced){
+                    img.style.cssText = " border: 4px solid #2FA1D6"; 
+                }
                 //console.log(img.src);
-                /*document*/ 
                 var table = document.getElementById('myTable');
                 var nbRows = table.rows.length;
                 let currentRow;
@@ -632,6 +643,9 @@
                     currentRow = table.rows[0];
 
                 img.onload = function() {
+                    var realWidth = img.naturalWidth;
+                    var realHeight = img.naturalHeight;
+                    img.width = realWidth / (realHeight / 168);
                     var col = currentRow.insertCell(0);
                     col.appendChild(img); 
                     img.addEventListener("click", displayImage);
@@ -649,10 +663,19 @@
                 var currentImgProp = evt.target.alegoriaProp;
                 //console.log("click image", currentImgProp);
                 // console.log(sceneAllCams.children);
-
+               // console.log("arrrrrrrrrrrrrrrrrrr", arrLoadedCameraNames, currentImgProp.jpeg);
                 // We first check if image is registered or not using a WFS request (TOTO)
                 // temporarly for a test, we just check the already loaded CameraImage 
-                if(arrLoadedCameraNames.includes(currentImgProp.jpeg)){
+                var imgName = currentImgProp.jpeg.substring((currentImgProp.jpeg.lastIndexOf('/') + 1));
+                
+                // If iip url we recover the original imgName to look for it in camera names array
+                if (currentImgProp.jpeg.lastIndexOf('&CVT') >=0 ){
+                    var start =  currentImgProp.jpeg.lastIndexOf('.PVA');
+                    var end = currentImgProp.jpeg.lastIndexOf('.jp2');
+                    imgName = currentImgProp.jpeg.substring(start + 5, end);
+                }
+
+                if(arrLoadedCameraNames.includes(imgName)){   //currentImgProp.jpeg
 
                     //console.log('Image ' + currentImgProp.jpeg + 'already georeferenced');
                     var sceneCAMS = sceneAllCams.children;
@@ -780,7 +803,7 @@
                 onMeshCreated: function(mesh){workWithMesh(mesh,'EPSG:4978');},//workWithMesh(mesh),
                 source: wfsGeoserverSource
             });
-       //     view.addLayer(wfsGeoserverLayer);
+            view.addLayer(wfsGeoserverLayer);
 
 
 
@@ -796,12 +819,12 @@
                 parser: itowns.GeoJsonParser.parse,
                 ipr: 'Alegoria',
                 format: 'json',
-                zoom: { min: 12, max: 12 },
+                zoom: { min: 16, max: 16 },
                 networkOptions: {crossOrigin: ''}
             });
 
             
-            var wfsGeoserverLayerTA = new itowns.GeometryLayer('WFS Geoserver', new itowns.THREE.Group(), {
+            var wfsGeoserverLayerTA = new itowns.GeometryLayer('WFS Geoserver TA', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     //playWithProperties: playWithProperties,
@@ -809,7 +832,7 @@
                 onMeshCreated: function(mesh){workWithMesh(mesh,'EPSG:2154');},//workWithMesh(mesh),
                 source: wfsGeoserverSourceTA
             });
-            view.addLayer(wfsGeoserverLayerTA);
+        //    view.addLayer(wfsGeoserverLayerTA);
 
 
 
