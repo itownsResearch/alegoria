@@ -56,6 +56,13 @@
             <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
         </form>
         <div id="metaData" class = "metaDataDisplay"></div>
+        <div id="filtrage">
+            <label class="switch">
+             
+                <input id= "switchButton" type="checkbox" onchange="filterThumbnails()">
+                <span class="sliders round"></span>
+          </label>
+        </div>
 
         <script src="../../itowns/examples/js/GUI/GuiTools.js"></script>
         <script src="../../itowns/dist/itowns.js"></script>
@@ -230,6 +237,32 @@
                     x.style.display = "none";
                     button.innerHTML = '▢';
                 }
+            }
+
+            // Filter between georeferenced and not georeferenced images
+            function filterThumbnails(){
+                var isChecked = document.getElementById("switchButton").checked;  
+                var table = document.getElementById('myTable');
+                var nbRows = table.rows.length;
+                let currentRow = table.rows[0];
+                //console.log(currentRow);
+
+                // GET THE CELLS COLLECTION OF THE CURRENT ROW.
+                var objCells = currentRow.cells;
+                var display = "display:none;"
+
+                if(!isChecked){
+                    display = 'table-row';
+                }
+
+                // LOOP THROUGH EACH CELL OF THE CURENT ROW TO READ CELL VALUES.
+                for (var j = 0; j < objCells.length; j++) {
+                   console.log(objCells[j].innerHTML);
+                   if(!objCells[j].innerHTML.includes("style"))  // Ugly way to detect georeferenced image because they have style for border
+                        objCells[j].style = display;
+                   
+                }
+
             }
 
             //testGeocoding("bordeaux");
@@ -630,6 +663,7 @@
                 img.src = urlSource  + prop.jpeg; // "http://134.158.74.36/images/archives_nationales/FRAN_0207_0155_L.jpg";
                 // img.nameAlegoria = img.src;
                 img.alegoriaProp = prop;
+                img.georeferenced = georeferenced;
                 if(georeferenced){
                     img.style.cssText = " border: 4px solid #2FA1D6"; 
                 }
