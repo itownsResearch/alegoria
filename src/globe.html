@@ -327,27 +327,6 @@
 
 
             function testGeocoding(lieudit){
-/*
-                var url = "https://wxs.ign.fr/3ht7xcw6f7nciopo1etuqp2/geoportail/ols?";
-
-                var formData = `<?xml version="1.0" encoding="UTF-8"?>
-                            <XLS
-                            xmlns:xls="http://www.opengis.net/xls"
-                            xmlns:gml="http://www.opengis.net/gml"
-                            xmlns="http://www.opengis.net/xls"
-                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                            version="1.2"
-                            xsi:schemaLocation="http://www.opengis.net/xls http://schemas.opengis.net/ols/1.2/olsAll.xsd">
-                                <RequestHeader/>
-                                <Request requestID="1" version="1.2" methodName="LocationUtilityService">
-                                <GeocodeRequest returnFreeForm="false">
-                                    <Address countryCode="PositionOfInterest">
-                                            <freeFormAddress>rennes</freeFormAddress>
-                                    </Address>
-                                </GeocodeRequest>
-                                </Request>
-                            </XLS>`;
-*/
 
                 var url = "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/look4/user/search?indices=locating&method=prefix&types=address%2Cposition%2Ctoponyme%2Cw3w&nb=1&match%5Bfulltext%5D="+ lieudit;
                 
@@ -412,7 +391,7 @@
             });
             */
            
-        var wfsBuildingSource = new itowns.WFSSource({
+            var wfsBuildingSource = new itowns.WFSSource({
                 url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                 version: '2.0.0',
                 typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
@@ -466,6 +445,114 @@
                 });
             }
             
+
+            // Creates a camera using the metadata (extrinseque, intraseque and image url file)
+            function createCamFromMetaData(posM, properties){
+
+                    // Let's download the image
+                    console.log("createCamFromMetaData: ", posM, properties);
+                    var prop = properties; // m.feature.geometry[i].properties;
+                    var imgName = prop.name; //console.log(prop);
+                    var epsgquaternion = prop.epsgquaternion;
+                    var source = prop.source; //console.log(imgName, epsgquaternion);
+                    
+                    // We check if already image displayed we don't treat it
+                    if(arrLoadedCameraNames.includes(imgName)) return 0;
+
+                    arrLoadedCameraNames.push(imgName);
+
+                    //https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/2324-0191/IGNF_PVA_1-0__1947-04-10__C2324-0191_1947_CDP2368_0002.jp2&LYR=20&WID=200&CVT=JPEG
+                    // Dessous: url fonctionnant pour les PVA IGN en jp2 servies par le Geoportail
+                    // var url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
+                    var url = "../data/" + imgName;  // Default url (imported image from user for registration)
+                    //  if(imgName.includes("IGNF_PVA"))
+                    //     url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
+
+                    // We construct the url using the source table
+                    // imageSourcesInfoDico is already constructed using the source table
+                    if(source != null){ 
+                        var propSource = imageSourcesInfoDico['sources.' + source];   console.log("poooooop", propSource);
+                        if(propSource.iip != null)  // ex iip: "https://wxs.ign.fr/{key}/iipsrv.fcgi?FIF=DEMAT.PVA/{rlt}_{image}.jp2"
+                            url = 'https://wxs.ign.fr/02eikbvn4qqd6y1g5iiiq8fi/iipsrv.fcgi?FIF=DEMAT.PVA/' + imgName + '.jp2' + '&WID=' + lowResValue + '&CVT=JPEG';
+                            else if(propSource.highres != null)
+                                url = propSource.highres.replace('{name}', imgName);//replace(/{name}/gi, )
+                                else if(propSource.url != null) 
+                                    url = propSource.url + imgName;
+                                    else
+                                        url = "../data/" + imgName;
+                    }
+                                        
+                    // We check if image was inserted in database with extension ( avoid .jpg.jpg for example)
+                    url = url.replace(".jpg.jpg", ".jpg");
+
+                    // We now also add the image to the thumnails table (display them in 2d)
+                    handleThumbnails("",{jpeg:url}, true); 
+
+                    //url = "IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826_xs.jpg";  // temp for test
+                    console.log(url);
+                    // Temp to test with cropped image (Giordano)
+                    //  if(url.includes("843"))
+                     //   url ="http://134.158.74.36/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
+
+                    // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
+                    // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
+                    //var pvaTexture = new itowns.THREE.TextureLoader().load('IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826.jpg');
+
+                    // We then create a photogrammetric camera using the PVA properties
+                    // Intrinsec properties
+                    var focal =  [prop.fx, prop.fy];
+                    var size = [prop.sx, prop.sy];
+                    //[ 9100, 9500 ]; //prop.px * 2, prop.py * 2];
+                    var point = [ prop.px, prop.py ];
+                    var disto = [ { type: "ModRad", C: new THREE.Vector2(prop.cx, prop.cy), R: new THREE.Vector4(prop.c3, prop.c5, prop.c7, prop.cm), project: RadialDistortion.project } ];
+                    var imageMatrix = new THREE.Matrix4();
+                    if(prop.m00 != undefined){  // If there are some Crop Infos, we set the image matrix (not identity)
+                        imageMatrix.elements[0]  = prop.m00;
+                        imageMatrix.elements[1]  = prop.m01;
+                        imageMatrix.elements[4]  = prop.m10;
+                        imageMatrix.elements[5]  = prop.m11;
+                        imageMatrix.elements[12] = prop.m20;
+                        imageMatrix.elements[13] = prop.m21;
+                    }
+                    var cameraP = new PhotogrammetricCamera(focal, size, point, 0, disto, undefined, undefined, undefined, imageMatrix );//, size, point, 0, [], 10, 10000); //, skew, distos, near, far);
+                    // We inject the name of the image in the camera attributes
+                    cameraP.name = url;
+                    cameraP.originalName = imgName;
+                    cameraP.propAdded = prop; // Dirty and naughty: we add all info we got to the photogrammetric camera object
+
+                    // Extrinsec
+                    var quaternion = new THREE.Quaternion(prop.qx, prop.qy, prop.qz, prop.qw); // console.log(m.feature.vertices.slice(i * 3, i * 3 + 3));
+                    var pos = posM; // new THREE.Vector3().fromArray(m.feature.vertices.slice(i * 3, i * 3 + 3)); // console.log(pos); console.log(view.camera.camera3D.position); 
+                    cameraP.position.copy(pos);
+
+                    // Here we need to check the coordinate system of the received camera
+                    // If already EPSG:4978, nothing to do. If other, we need to compute the new orientation in our scene system (4978)
+                    if(epsgquaternion != undefined && epsgquaternion != 4978){  // projectionCode 
+                        var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
+                        var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS('EPSG:' + epsgquaternion, "EPSG:4978")(coords);
+                        quaternion.premultiply(quat_crs2crs);
+                    }
+
+                    
+                    // Here we need to check the coordinate system of the received camera
+                    // If already EPSG:4978, nothing to do. If other, we need to compute the new orientation in our scene system (4978)
+                    if(epsgquaternion == undefined){  // projectionCode 
+                        var coords = new itowns.Coordinates('EPSG:4978', pos.x, pos.y, pos.z);
+                        var quat_crs2crs = itowns.OrientationUtils.quaternionFromCRSToCRS('EPSG:2154' /*+ projectionCode*/, "EPSG:4978")(coords);
+                        quaternion.premultiply(quat_crs2crs);
+                        //quaternion.multiply(new THREE.Quaternion(1,0,0,0));
+                    }
+
+                    cameraP.quaternion.copy(quaternion);
+
+                    if(url.includes("843")) {console.log("CAM 843: cameraP: ",cameraP, "prop: ", prop);
+                        url = "OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843FromMathieu.jpg";
+                        cameraP.name = url;
+                    }
+
+                    createCameraHelper(cameraP);
+                    handleOrientation(cameraP);   // Goes to that new created camera
+            }
 
             // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
             // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
@@ -758,59 +845,6 @@
                 divMeta.innerHTML = desc.replace(regex, "");
                 //JSON.stringify(currentImgProp);
             }
-/*
-            const layoutGrid = (height, width) => {
-                const container = document.getElementById('containerIMG');
-                container.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
-                container.style.gridTemplateRows = `repeat(${height}, 1fr)`;
-                container.style.overflow = 'scroll;';
-                container.innerHTML = `<table id="myTable">
-                                       
-                                        </table>`
-
-            }
-
-            const fillGrid = (x, y, blockSize, numOfBlocks, color) => {
-                const container = document.getElementById('containerIMG');
-                const test = Array(numOfBlocks).keys();
-                        for (var i of test){
-                            let markup = `<div id="card${i}" 
-                                            style="grid-column: ${Math.floor(Math.random() * y) + 1} / span ${blockSize}; 
-                                                    grid-row: ${Math.floor(Math.random() * x) + 1} / span ${blockSize};
-                                                    background-color: ${color};
-                                                    border: 1px black solid;">${i}</div>`
-                            container.innerHTML += markup
-                        };
-            }
-*/
-
-/*
-            // Test raster version  (points feature seems they are not handled in rasterization)
-            var wfsGeoserverLayerANRASTER  = new itowns.ColorLayer('wfsGeoserverSourceAN', {
-                transparent: true,
-                style: {
-                    point: {
-                            color: 'white',
-                            line: 'green',
-                        }
-                 
-                },
-                //isValidData: isValidData,
-                source: wfsGeoserverSourceAN,
-            });
-            view.addLayer(wfsGeoserverLayerANRASTER);
-            FeatureToolTip.addLayer(wfsGeoserverLayerANRASTER, {
-                filterGeometries: function _(features, layer) {
-                    var idList = [];
-                    return features.filter(function _(f) {
-                        if (!idList.includes(f.geometry.properties.id)) {
-                            idList.push(f.geometry.properties.id);
-                            return f;
-                        }
-                    });
-                }
-            });
-*/
 
 
             // Access to our Geoservers (On ISC) to get registered cameras  (ex alegoriaMerge2)
@@ -940,11 +974,36 @@
                 }
 
                 // load3DModel();
-                //sendWFST();
-                
-                // createGrid();
-               // layoutGrid(5,5);
-               // fillGrid(5, 5, 4, 2, "green");
+
+                // If the user specified an imgName in the url, we request the WFS to go to it
+                if(imName !== null){
+                    console.log("accessing image specified in URL: ", imName);
+                    var url = "http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS&REQUEST=GetFeature&typeName=alegoriaMerge2&VERSION=2.0.0&outputFormat=json&CQL_FILTER=name=%27" + imName + "%27";
+                    fetch(url)
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then((myJson) => {
+                        console.log(myJson);
+                        var feat = myJson.features[0];
+                        createCamFromMetaData(new THREE.Vector3(feat.geometry.coordinates[0],feat.geometry.coordinates[1],feat.geometry.coordinates[2]) ,feat.properties);
+                        if(arrLoadedCameraNames.includes(imName)){  
+                            var sceneCAMS = sceneAllCams.children;
+                            var camImg;
+                            var a = 0;
+                            var found = false;
+                            while(a < sceneCAMS.length && !found){
+                                if(sceneCAMS[a].name.indexOf(imName) >= 0 ){
+                                    camImg = sceneCAMS[a];
+                                    found = true;
+                                }                    
+                                a++;
+                            }
+                            handleOrientation(camImg);
+                            }
+                    });
+
+                }
 
             });
 
