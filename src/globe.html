@@ -23,12 +23,13 @@
                                                             position: absolute;
                                                             bottom: 0;
                                                             right: 0;
-                                                            border: 4px white solid; 
+                                                            border: 0px white solid; 
                                                             height:194px; 
                                                             width: 100%;
                                                             margin: 0;
                                                             padding: 0;
-                                                            overflow: auto">
+                                                            overflow: auto;
+                                                            overflow-y: hidden;">
                                                             <table id="myTable">
                                        
                                                             </table>
@@ -1070,7 +1071,7 @@
             // Draw a sphere to show where the 3D picking has been done
             function show3DPicking(x,y,z, iteration){
 
-                var geometry = new itowns.THREE.SphereGeometry( 0.8, 16, 16 );
+                var geometry = new itowns.THREE.SphereGeometry( 8, 16, 16 );
                 var col = new itowns.THREE.Color(0XFFFF00);
                 var material = new itowns.THREE.MeshBasicMaterial( {color: col.lerpHSL(new itowns.THREE.Color(0XFF0000), (iteration % 8) / 7), transparent:true, opacity:0.8} );
                 var sphere = new itowns.THREE.Mesh( geometry, material );
@@ -1319,6 +1320,7 @@
                     console.log("cam.namecam.namecam.namecam.name: ",cam.name);
                     cam.name =  cam.name.replace("WID=" + lowResValue, "WID=" + highResValue);
                     textureMaterial.map = new itowns.THREE.TextureLoader().load(cam.name);
+                    console.log("textureMaterial.map ",textureMaterial.map);
                     /*
                     var textureMaterialP = new OrientedImageMaterial({
                         map: new itowns.THREE.TextureLoader().load(cam.name), // new itowns.THREE.TextureLoader().load('../data/uv.jpg'),
