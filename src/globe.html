@@ -493,7 +493,7 @@
                     console.log(url);
                     // Temp to test with cropped image (Giordano)
                     //  if(url.includes("843"))
-                     //   url ="http://134.158.74.36/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
+                     //   url ="http://134.158.75.67/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
 
                     // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
                     // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
@@ -611,7 +611,7 @@
                     console.log(url);
                     // Temp to test with cropped image (Giordano)
                     //  if(url.includes("843"))
-                     //   url ="http://134.158.74.36/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
+                     //   url ="http://134.158.75.67/alegoria/data/OIS-Reech_IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0843.jpg";
 
                     // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
                     // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
@@ -689,7 +689,7 @@
             
             // Access archives_nationales WFS
             var wfsGeoserverSourceAN = new itowns.WFSSource({
-                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                url: 'http://134.158.75.67:8080/geoserver/alegoria/ows?',
                 protocol:'wfs',
                 version: '2.0.0',
                 typeName: 'archives_nationales', // 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
@@ -733,7 +733,7 @@
                         sphere.updateMatrixWorld();
                         view.scene.add( sphere );
 
-                        handleThumbnails("http://134.158.74.36/images/archives_nationales/", prop, false);//.jpeg);
+                        handleThumbnails("http://134.158.75.67/images/archives_nationales/", prop, false);//.jpeg);
                     }
                 }
                 // console.log(imagesArchivesDico);
@@ -749,7 +749,7 @@
             function handleThumbnails(urlSource, prop, georeferenced){
 
                 var img = new Image(thumbnailWidth, thumbnailHeight); //document.createElement('img'); 
-                img.src = urlSource  + prop.jpeg; // "http://134.158.74.36/images/archives_nationales/FRAN_0207_0155_L.jpg";
+                img.src = urlSource  + prop.jpeg; // "http://134.158.75.67/images/archives_nationales/FRAN_0207_0155_L.jpg";
                 // img.nameAlegoria = img.src;
                 img.alegoriaProp = prop;
                 img.georeferenced = georeferenced;
@@ -819,7 +819,7 @@
  
                     currentDATADirectory = "../../images/archives_nationales";
                     currentSource = 5;
-                    document.getElementById('img').src =  "http://134.158.74.36/images/archives_nationales/" + currentImgProp.jpeg;
+                    document.getElementById('img').src =  "http://134.158.75.67/images/archives_nationales/" + currentImgProp.jpeg;
 
                     // Then we create (initialize) the 4 xml files needed. Ground points, 2D image point, camera calibration and the micmac chantier descriptor
                     setTimeout(function() {   // Ugly timer cause src change/affectation takes time and no callback used
@@ -851,7 +851,7 @@
 
             // Access to our Geoservers (On ISC) to get registered cameras  (ex alegoriaMerge2)
             var wfsGeoserverSource = new itowns.WFSSource({
-                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                url: 'http://134.158.75.67:8080/geoserver/alegoria/ows?',
                 protocol:'wfs',
                 version: '2.0.0',
                 typeName: wfsInURL || defaultWFSCamera, // 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
@@ -880,7 +880,7 @@
             // Test all France Mathieu DB
             // Access to our Geoservers (On ISC) to get registered cameras  (ex alegoriaMerge2)
             var wfsGeoserverSourceTA = new itowns.WFSSource({
-                url: 'http://134.158.74.36:8080/geoserver/alegoria/ows?',
+                url: 'http://134.158.75.67:8080/geoserver/alegoria/ows?',
                 protocol:'wfs',
                 version: '2.0.0',
                 typeName: 'alegoria_ta2', //wfsInURL || defaultWFSCamera, // 'alegoria%3Ananterre_1960_2314_1701_full', //'alegoria%3Ananterre_1960_2314_1701_full',//'alegoria%3Aforcalquier',//'alegoria%3Afrejus',
@@ -909,7 +909,7 @@
             // Function to load at initialization 
             function loadImageSources(){
 
-                fetch('http://134.158.74.36:8080/geoserver/alegoria/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=alegoria%3Asources&outputFormat=application%2Fjson').then(
+                fetch('http://134.158.75.67:8080/geoserver/alegoria/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=alegoria%3Asources&outputFormat=application%2Fjson').then(
                         function(response) {
                             if (response.status !== 200) {
                                 console.log('Looks like there was a problem. Status Code: ' + response.status);
@@ -980,7 +980,7 @@
                 // If the user specified an imgName in the url, we request the WFS to go to it
                 if(imName !== null){
                     console.log("accessing image specified in URL: ", imName);
-                    var url = "http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS&REQUEST=GetFeature&typeName=alegoriaMerge2&VERSION=2.0.0&outputFormat=json&CQL_FILTER=name=%27" + imName + "%27";
+                    var url = "http://134.158.75.67:8080/geoserver/alegoria/ows?SERVICE=WFS&REQUEST=GetFeature&typeName=alegoriaMerge2&VERSION=2.0.0&outputFormat=json&CQL_FILTER=name=%27" + imName + "%27";
                     fetch(url)
                     .then((response) => {
                         return response.json();
@@ -1959,7 +1959,7 @@
         
         // Function that reads appariement results and get 3D point and write both gcp.xml and appuis.xml
         function readAppariement(){
-            // Default url for results: http://134.158.74.36/alegoriaX/src/pts_image1_image2.resultfiltre
+            // Default url for results: http://134.158.75.67/alegoriaX/src/pts_image1_image2.resultfiltre
             jQuery.get('pts_image1_image2.resultfiltre', function(data) {
                 console.log(data);
                 arrAppariement = data.split(/\s+/);

@@ -87,7 +87,7 @@ function exportToWFS(cam, tableName, source){
        var epsg = 4978;  // Default epsg
        //                                 <id> '+ Math.floor(Math.random() * 100000) + ' </id>\
        // Sending the transaction to the WFS
-       var url_0 = 'http://134.158.74.36:8080/geoserver/wfs'; // 'http://134.158.74.36:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';       
+       var url_0 = 'http://134.158.75.67:8080/geoserver/wfs'; // 'http://134.158.75.67:8080/geoserver/alegoria/ows?SERVICE=WFS'; // &REQUEST=Transaction'; //&typeName=alegoria%3Afrejus&VERSION=2.0.0';       
        var data3 = '<wfs:Transaction service="WFS" version="1.0.0"\
                        xmlns:wfs="http://www.opengis.net/wfs"\
                        xmlns:topp="http://www.openplans.org/topp"\
