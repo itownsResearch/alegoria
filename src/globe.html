@@ -191,7 +191,7 @@
             // 48.8365154,-3.3129326 ( rocher de la sentinelle)   // fprca: 43.9595975,5.7772372,
 
             itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-            var positionOnGlobe = { longitude:-2.238466, latitude: 46.96861820, altitude: 800 };
+            var positionOnGlobe = { longitude:2.3186303566461626, latitude: 48.8642674180491, altitude: 1800 };
             if(posInit){ positionOnGlobe.longitude =  Number(posInit[1]); positionOnGlobe.latitude = Number(posInit[0]), positionOnGlobe.altitude =  Number(posInit[2]) || positionOnGlobe.altitude; }
             //console.log(positionOnGlobe);
             //var miniView;
@@ -558,7 +558,7 @@
             
             // We don't have a jp2 to jpg server (iip) yet so for the test we converted one image
             // IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826
-            var pvaTexture = new itowns.THREE.TextureLoader().load('IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826.jpg');
+           // var pvaTexture = new itowns.THREE.TextureLoader().load('IGNF_PVA_1-0__1966__C3544-0311_1966_CDP5335_0826.jpg');
 
             // Handles PVA representation when received from WFS
             // Load image and project it on the ground using the image properties
@@ -686,7 +686,7 @@
 
 
 
-            
+  /*          
             // Access archives_nationales WFS
             var wfsGeoserverSourceAN = new itowns.WFSSource({
                 url: 'http://134.158.75.67:8080/geoserver/alegoria/ows?',
@@ -712,7 +712,7 @@
                 source: wfsGeoserverSourceAN
             });
             view.addLayer(wfsGeoserverLayerAN);
-
+*/
 
             
             // What do we do with archives images (not registered a priori)
@@ -1071,7 +1071,7 @@
             // Draw a sphere to show where the 3D picking has been done
             function show3DPicking(x,y,z, iteration){
 
-                var geometry = new itowns.THREE.SphereGeometry( 8, 16, 16 );
+                var geometry = new itowns.THREE.SphereGeometry( 1, 16, 16 );
                 var col = new itowns.THREE.Color(0XFFFF00);
                 var material = new itowns.THREE.MeshBasicMaterial( {color: col.lerpHSL(new itowns.THREE.Color(0XFF0000), (iteration % 8) / 7), transparent:true, opacity:0.8} );
                 var sphere = new itowns.THREE.Mesh( geometry, material );
@@ -1282,7 +1282,7 @@
                 currentOrientationWorkedImage = currentImageName;
                 //view.camera._preSSE = 12000;  // Weird but needed to keep good tile resolution
                 arrDisplayedImages.push(cam);
-
+                
                 // Already set in case of DB WFS. We can set here the High Resolution image (TODO)
                 if(cam.name === ""){  // Old school XML
                     setMaterial(textureMaterial, cam);
@@ -1307,7 +1307,7 @@
 
                     console.log("cam.name  null", cam);
                     if(pictureInfos.plane == null){
-                        plane = setupPictureFromCamera(camera, currentDATADirectory + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
+                        plane = setupPictureFromCamera(camera, currentDATADirectory  + "/" + pictureInfos.image, pictureInfos.opacity, pictureInfos.distance); // plane is added to the photogra camara (so the scene)
                         pictureInfos.plane = plane; console.log("picturesinfos.planeee: ", plane);
                     }else{
                         plane = pictureInfos.plane;
