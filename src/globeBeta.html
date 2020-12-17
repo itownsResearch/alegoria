@@ -1073,7 +1073,7 @@
             // Draw a sphere to show where the 3D picking has been done
             function show3DPicking(x,y,z, iteration){
 
-                var geometry = new itowns.THREE.SphereGeometry( 2.5, 16, 16 );
+                var geometry = new itowns.THREE.SphereGeometry( 1, 16, 16 );
                 var col = new itowns.THREE.Color(0XFFFF00);
                 var material = new itowns.THREE.MeshBasicMaterial( {color: col.lerpHSL(new itowns.THREE.Color(0XFF0000), (iteration % 8) / 7), transparent:true, opacity:0.8} );
                 var sphere = new itowns.THREE.Mesh( geometry, material );
