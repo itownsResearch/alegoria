@@ -1,0 +1,308 @@
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+#viewerDiv {
+    margin : auto auto;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+#viewerDiv > canvas {
+    display: block;
+}
+
+#menuDiv {
+    position: absolute;
+    top:0px;
+    margin-left: 0px;
+}
+
+@media (max-width: 600px) {
+    #menuDiv {
+        display: none;
+    }
+}
+
+.help {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: 0;
+    color: #eee;
+    font: 11px 'Lucida Grande',sans-serif;
+    line-height: normal;
+    text-shadow: 0 -1px 0 #111;
+    padding: 0 1rem;
+    background: #1a1a1a;
+    border: 1px solid #2c2c2c;
+    opacity: 0.8;
+}
+
+.help > p {
+    margin: 0.5rem 0;
+}
+
+.help > ul {
+    padding: 0 1rem;
+}
+
+@media (max-width: 600px) {
+    .help {
+        display: none;
+    }
+}
+
+.divScaleWidget {
+    border: 2px solid black;
+    border-top: none;
+    text-align: center;
+    display: block;
+    background-image: linear-gradient(rgba(200, 200, 200, 0.3), rgba(200, 200, 200, 0.3));
+    margin-bottom: 20px;
+    margin-right: 20px;
+    position: absolute;
+    width:200px;
+    height:18px;
+    color: black;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 16px;
+    right: 0;
+    bottom: 0;
+}
+
+.circleBase {
+    display: none;
+    border-radius: 50%;
+    margin-top: 0px;
+    margin-left: 0px;
+    padding: 0px;
+    position: absolute;
+    z-index: 1000;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 20px;
+    line-height: 0px;
+    text-align: center;
+    pointer-events: none;
+    width: 10px;
+    height: 10px;
+    background: rgba(160, 160, 160, .4);
+    border: 2px solid #775555;
+    vertical-align: middle;
+}
+
+/* tooltip */
+.tooltip {
+    display: none;
+    background-image: linear-gradient(rgba(80, 80, 80,0.95), rgba(60, 60, 60,0.95));
+    box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
+    margin-top: 20px;
+    margin-left: 20px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1000;
+    color: #CECECE;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: left;
+}
+.tooltip li, .coord {
+    font-size: 12px;
+    padding-left:20px;
+    color: #93B7C0;
+    text-shadow: 0px 1px 0px rgba(200,200,200,.3), 0px -1px 0px rgba(30,30,30,.7);
+}
+
+
+#miniDiv{
+    height: 50%; 
+    width: auto; 
+    max-width: 600px; 
+
+}
+#img{
+    height: 100%; 
+    width: auto; 
+}
+
+
+
+/* CSS For the image used for resection and little button associated */
+#miniDiv {
+    display: block;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    position: absolute;
+    left: 20;
+    bottom: 210;
+    color: white;
+}
+#info {
+    color: black;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin-right: 15px;
+    padding: 0.3rem;
+    background-color: rgba(255, 255, 255, 0.493);
+    border: 2px solid black;
+    border-radius: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+.styleForm {
+    text-align: center;
+    display: block;
+    margin-top: 00px;
+    margin-left: 20px;
+    position: absolute;
+    color: black;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 12px;
+    left: 0;
+    bottom: 176;
+}
+
+.styleButton{
+    display: block;
+    margin-bottom: 0px;
+    margin-right: 0px;
+    position: absolute;
+    left: 0;
+    bottom: 208;
+    color: rgb(187, 34, 179);
+}
+
+.gotolocation {
+    text-align: center;
+    display: block;
+    margin-top: 00px;
+    margin-left: 20px;
+    position: absolute;
+    color: black;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 12px;
+    right: 10;
+    top:10;
+}
+
+.metaDataDisplay {
+    text-align: center;
+    display: block;
+    margin-top: 00px;
+    margin-left: 20px;
+    position: absolute;
+    color: black;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    max-width: 450px;
+    background-color: rgba(255, 186, 186, 0.7);
+    right: 4;
+    bottom: 206;
+}
+.buttonX {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 4px 4px;
+    text-align: center; 
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    bottom: 0;
+}
+.thick-green-border {
+    border-color: green;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 50%;
+  }
+
+p { background-color:#FFFFFF; 
+    color: black;
+}
+
+.imageholder{
+    position: relative;
+    float: right;
+    vertical-align: middle;
+    bottom: 10;
+    left: 4;
+}
+
+
+
+.switch {
+    position: absolute;
+    bottom: 270;
+    right:20;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+  
+ .switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .sliders {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc000;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .sliders:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .sliders {
+    background-color: #2196F3;
+  }
+  
+  input:focus + .sliders {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .sliders:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+  
+  /* Rounded sliders */
+  .sliders.round {
+    border-radius: 34px;
+  }
+  
+  .sliders.round:before {
+    border-radius: 50%;
+  }
