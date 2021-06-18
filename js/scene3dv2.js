@@ -55,7 +55,7 @@ function export3Dcoord(ptname,x,y,z) {
         xhr2 = new ActiveXObject("Microsoft.XMLHTTP");
     }
 
-    var url2 = "fetch3dcoord.php";
+    var url2 = "php/fetch3dcoord.php";
 
     //open a connection to the server
     xhr2.open("POST", url2, true);

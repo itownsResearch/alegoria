@@ -1,0 +1,6 @@
+Exit with code 1 
+Generated from line 325  of file /var/www/micmac/src/util/error.cpp 
+PID=13231
+Context=[Elise_Pile_Mess_0::display]
+GMEC:Kind of err User's error
+MM3D-Command=["/var/www/micmac/bin/mm3d" "aspro" "Capture.JPG" "Ori-CalInit" "gcp_Capture.xml" ]

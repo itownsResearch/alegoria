@@ -57,7 +57,7 @@ function getImgCoordOnClick(event){
         var pos_y = (cursor_y - image_offsetTop + 0.5) * image_height / image_rendheight;
         var point = document.createElement("img");
         //display a cross on click
-        point.setAttribute('src', "../data/cross.png");
+        point.setAttribute('src', "data/cross.png");
         point.setAttribute('style',"position:absolute;visibility:hidden;z-index:20;width:10px;height:10px");
         document.body.appendChild(point);
      //   miniDiv.appendChild(point);
@@ -89,7 +89,7 @@ function getImgCoordOnClick(event){
         }
 
         //php script to write the xml file
-        var url = "fetch2dcoord.php";
+        var url = "php/fetch2dcoord.php";
 
         //open a connection to the server
         xhr.open("POST", url, true);
@@ -123,7 +123,7 @@ function export2DCoord(ptname,x,y){
     var pos_y = y; //(cursor_y - image_offsetTop + 0.5) * image_height / image_rendheight;
     var point = document.createElement("img");
     //display a cross on click
-    point.setAttribute('src', "../data/cross.png");
+    point.setAttribute('src', "data/cross.png");
     point.setAttribute('style',"position:absolute;visibility:hidden;z-index:20;width:10px;height:10px");
     document.body.appendChild(point);
     //   miniDiv.appendChild(point);
@@ -156,7 +156,7 @@ function export2DCoord(ptname,x,y){
         }
 
         //php script to write the xml file
-        var url = "fetch2dcoord.php";
+        var url = "php/fetch2dcoord.php";
 
         //open a connection to the server
         xhr.open("POST", url, true);

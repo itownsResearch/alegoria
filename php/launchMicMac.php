@@ -1,7 +1,6 @@
 <?php
 
 $img_name = $_GET['imagename'];
-$path_to_data = $_GET['dir'];
 //Method to execute a command in the terminal
 function terminal($command)
 {
@@ -24,32 +23,32 @@ function terminal($command)
         $output = ob_get_contents();
         ob_end_clean();
     }
-     
+
     //exec
     else if(function_exists('exec'))
     {
         exec($command , $output , $return_var);
         $output = implode("n" , $output);
     }
-     
+
     //shell_exec
     else if(function_exists('shell_exec'))
     {
         $output = shell_exec($command) ;
     }
-     
+
     else
     {
         $output = 'Command execution not possible on this system';
         $return_var = 1;
     }
-     
+
     return array('output' => $output , 'status' => $return_var);
 }
 
 //MicMac inputs
-$path_to_output = "../outputs/test";
-//$path_to_data = "../data";
+$path_to_output = "../data/test";
+$path_to_data = "../data";
 //$img_name = "FRAN_0207_0628_L.jpg";
 $calib_file = "Ori-CalInit";
 $imagename = preg_replace('/\\.[^.\\s]{3,4}$/', '', $img_name);

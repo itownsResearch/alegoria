@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Globe</title>
+        <title>Alegoria Demo</title>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../itowns/examples/css/LoadingScreen.css">
         <link rel="stylesheet" type="text/css" href="css/scene2d.css">
@@ -12,7 +12,7 @@
 
         <div id="viewerDiv">
                 <p id="info">
-                        <img id="imgLogo" src="data/logoAlegoria.jpg" onmousedown="getImgCoordOnClick(event)">
+                        <img id="imgLogo" src="data/logoAlegoria.jpg"/> <!-- onmousedown="getImgCoordOnClick(event)"> -->
                         <br>
                         <a href="http://www.archives-nationales.culture.gouv.fr/" target="_blank"> Images: Archives Nationales </a>
                 </p>
@@ -33,10 +33,10 @@
                                                             </table>
                 </div>
 
-            <button id="buttonHideShow" class="styleButton" onclick="hideShow()">_</button>
+            <button id="buttonHideShow" class="styleButton">_</button>
 
             <div id="miniDiv">
-                <img id="img"  onmousedown="getImgCoordOnClick(event)">
+                <img id="img"/>
             </div>
 
 
@@ -52,7 +52,7 @@
             <input type="file" name="files[]" multiple>
             <input type="submit" value="Upload File" name="submit">
             <p  class="imageholder" id="countPoints"> Points registered: 0</p>
-            <button class="buttonX" type="button" onclick="computeResection(event, document.getElementById('img').src.split('/').pop(), true)">Go</button>
+            <button class="buttonX" type="button" id="goButton">Go</button>
         </form>
         <div id="metaData" class = "metaDataDisplay"></div>
         <div id="filtrage">
@@ -236,6 +236,7 @@
             function hideShow() {
                 var x = document.getElementById("img");
                 var button = document.getElementById("buttonHideShow");
+		if (!x || !button) { console.error("img is not initialized yet"); return; }
                 if (x.style.display === "none") {
                     x.style.display = "block";
                     button.innerHTML = '_';
@@ -244,31 +245,29 @@
                     button.innerHTML = '▢';
                 }
             }
+            document.getElementById("buttonHideShow").addEventListener("click", hideShow);
+            document.getElementById("img").addEventListener("mousedown", getImgCoordOnClick);
 
 
             var color = new itowns.THREE.Color();
 
-            function testGeocoding(lieudit){
+	    function geocode(text) {
+                const url = "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/look4/user/search?indices=locating&method=prefix&types=address%2Cposition%2Ctoponyme%2Cw3w&nb=1&match%5Bfulltext%5D=";
+                return fetch(url + text)
+                .then(response => response.json())
+                .then(json => {
+                    const coord = json.features[0].geometry.coordinates; console.log(coord);
+                    return new itowns.Coordinates('EPSG:4326', coord[0], coord[1], coord[2]);
+                });
+	    }
 
-                var url = "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/look4/user/search?indices=locating&method=prefix&types=address%2Cposition%2Ctoponyme%2Cw3w&nb=1&match%5Bfulltext%5D="+ lieudit;
-
-                fetch(url)
-                .then((response) => {
-                    return response.json();
-                })
-                .then((myJson) => {
-                   // console.log(myJson);
-
-                    var coordArray = myJson.features[0].geometry.coordinates;
-                    // console.log(coordArray);
+            function travelTo(coord){
                     var pathTravel = [];
                     var timeTravel = 5000;
                     pathTravel.push({ range: 100000, time: timeTravel/2 , tilt: 80, heading: -50});
-                    pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', coordArray[0], coordArray[1]), range: 50000, time: timeTravel });
+                    pathTravel.push({ coord: coord, range: 50000, time: timeTravel });
                     pathTravel.push({ range: 1400, time: timeTravel , tilt: 50, heading: -110 });
                     travel(pathTravel);
-                });
-
             }
 
             function travel(pathTravel) {
@@ -760,20 +759,18 @@
                         document.getElementById('countPoints').innerHTML = "Points registered: " + ptname;
                         var pickBuilding = pickingBuildings(event);
 
+			let x = pickBuilding.x;
+			let y = pickBuilding.y;
+			let z = pickBuilding.z;
+
+
                         if(pickBuilding.z == 0){
                             // get 3D coordinates on ground
-                            geoposition = view.controls.pickGeoPosition(new itowns.THREE.Vector2(event.pageX,event.pageY));
-                            //console.log(view.controls.pickGeoPosition(view.eventToViewCoords(event.altKey)));
-                            // convert coordinates to geographic system
-                            let converted = geoposition.as('EPSG:4978');
-                            // console.log(converted);
-                            //coordinates = converted._values;
+                            const geoposition = view.controls.pickGeoPosition(new itowns.THREE.Vector2(event.pageX,event.pageY));
+                            const converted = geoposition.as('EPSG:4978');
                             x = converted.x;
                             y = converted.y;
                             z = converted.z;
-                        }
-                        else{
-                            x = pickBuilding.x, y = pickBuilding.y, z = pickBuilding.z;
                         }
 
                         show3DPicking(x,y,z, ptname);
@@ -838,7 +835,7 @@
 
 
             // ------ Upload Part --------------------------------------------------------------------------
-            const url = 'process.php';
+            const url = 'php/process.php';
             const form = document.querySelector('form');
 
             form.addEventListener('submit', e => {
@@ -924,7 +921,7 @@
                     }
                 };
 
-                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName + "&dir=" + currentDATADirectory, true);
+                xmlhttp.open("GET", "php/launchMicMac.php" +"?"+ "imagename=" + imgName + "&dir=" + currentDATADirectory, true);
                 xmlhttp.send();
             }
 
@@ -946,41 +943,22 @@
                         if(show) showResection();
                     }
                 };
-                xmlhttp.open("GET", "launchMicMac.php" +"?"+ "imagename=" + imgName + "&dir=" + currentDATADirectory, true);
+                xmlhttp.open("GET", "php/launchMicMac.php" +"?"+ "imagename=" + imgName + "&dir=" + currentDATADirectory, true);
                 xmlhttp.send();
             }
-
-
-
-            // launch full pipeline
-            function computeResectionFullAuto(){
-                saveAsImageToServer();
-            }
-
 
             // Show oriented image using micmac aspro xml
             function showResection(){
 
                 // fetch orientation file
-                var source = new FetchSource('../outputs/test/');
+                var source = new FetchSource('data/test/');
                 // parse micmac orientation
-                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
-                    .then(data => MicmacParser.parse(data, source))
+		const name = 'Orientation-' + arrayImages[currentIndiceNav].image + '.xml';
+                source.open('Ori-Aspro/'+name, 'text')
+                    .then(data => Parsers.MicmacParser.parse(data, source, name))
                     .then(handleOrientation);
+		// change orientation file each time you change the picture!
             }
-
-
-            // Show oriented image using micmac aspro xml
-            function previewResection(){
-
-                // fetch orientation file
-                var source = new FetchSource('../outputs/test/');
-                // parse micmac orientation
-                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
-                    .then(data => MicmacParser.parse(data, source))
-                    .then(handleOrientation);
-            }
-
 
 
             /******************* Rendering functions **********************************************/
@@ -1190,10 +1168,11 @@
             // If no initial position passed in the URL we launch the first registered image
             if(! posInit && arrayImages.length > 0){
                 // fetch orientation file
-                var source = new FetchSource('../outputs/test/');
+                var source = new FetchSource('data/test/');
                 // parse micmac orientation
-                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
-                    .then(data => MicmacParser.parse(data, source))
+		const name = 'Orientation-' + arrayImages[currentIndiceNav].image + '.xml';
+                source.open('Ori-Aspro/' + name, 'text') // change orientation file each time you change the picture!
+                    .then(data => Parsers.MicmacParser.parse(data, source, name))
                     .then(handleOrientation);
             }
 */
@@ -1263,12 +1242,11 @@
                 var obj  = { next:function(){ nextImage() }};
                 var obj2 = { projectOnBuildings:function(){projectOnBuildings()}};
                 var obj3 = { resetPosition:function(){ resetPosition() }};
-                var obj4 = { previewResection: function(){ previewResection() }};
+                var obj4 = { previewResection: function(){ showResection() }};
                 var obj5 = { fog: 0.};
                 var obj6 = { near: nearProj};
                 var obj7 = { far: farProj};
                 var obj8 = { parallax: 0.};
-                var obj10 = { resectionAuto: function(){ computeResectionFullAuto() }};
                 var obj11 = { saveRegistration: function(){ saveCamToWFS() /* playVideo(); */ }};
                 var obj12 = { date: 1951};
 
@@ -1280,7 +1258,6 @@
                 navImageGUI.add(obj6,'near', 8., 250.).onChange(function setNearValue(value){textureMaterial.uniforms.near.value = value; nearProj = value; createDepthMap(); view.notifyChange();});
                 navImageGUI.add(obj7,'far', 8., 250.).onChange(function setFarValue(value){textureMaterial.uniforms.far.value = value; farProj = value; createDepthMap() ; view.notifyChange();});
                 navImageGUI.add(obj8,'parallax', 0., 1.).onChange(function setParallaxValue(value){textureMaterial.uniforms.parallax.value = value; view.notifyChange();});
-                navImageGUI.add(obj10,'resectionAuto');
                 navImageGUI.add(obj11,'saveRegistration');
                 navImageGUI.add(obj12,'date', 1940, 1980).onChange(function filterD(value){filterDates(value); view.notifyChange();});
                 view.notifyChange(view.camera.camera3D);
@@ -1316,8 +1293,9 @@
                 currentIndiceNav = (currentIndiceNav + 1) % arrayImages.length;
                 console.log('indice image: ', currentIndiceNav);
 
-                source.open('Ori-Aspro/Orientation-' + arrayImages[currentIndiceNav].image + '.xml', 'text') // change orientation file each time you change the picture!
-                .then(data => MicmacParser.parse(data, source))
+		const name = 'Orientation-' + arrayImages[currentIndiceNav].image + '.xml';
+                source.open('Ori-Aspro/'+name, 'text')
+                .then(data => Parsers.MicmacParser.parse(data, source, name))
                 .then(handleOrientation);
                 //view.notifyChange();
             }
@@ -1583,40 +1561,6 @@
         }
 
 
-        // Save scene to image on the server and launch AUTO REGISTRATION
-        function saveAsImageToServer() {
-            var imgData, imgNode;
-            var strDownloadMime = "image/octet-stream";
-            try {
-               // var strMime = "image/png";
-                view.mainLoop.gfxEngine.renderView(view);
-                imgData = view.mainLoop.gfxEngine.renderer.domElement.toDataURL("image/png");
-                var imgImportedName = document.getElementById('img').src.split('/').pop();
-                saveFileToServer(imgData, imgImportedName);
-            } catch (e) {
-                console.log(e);
-                return;
-            }
-        }
-
-        var saveFileToServer = function (strData, filename) {
-          console.error("erased by MB.");
-/*
-            $.ajax({
-                type: "POST",
-                url: "writeImageToServer.php",
-                data: {
-                    imgBase64: strData,
-                    imgName: filename
-                }
-            }).done(function(response) {
-                console.log('saved: ' + response);
-                // We can then reproject homologues points into the scene and launch Aspro!
-                readAppariement();
-            });
-*/
-        }
-
         // Function that reads appariement results and get 3D point and write both gcp.xml and appuis.xml
         function readAppariement(){
             // Default url for results: http://134.158.75.67/alegoriaX/src/pts_image1_image2.resultfiltre
@@ -1777,7 +1721,7 @@
                 if(event.key == "Enter") {  // We use geocoder...
 
                     var lieu = document.getElementById("nameLocation").value;
-                    testGeocoding(lieu);
+                    geocode(lieu).then(travelTo);
 
                 }
 
@@ -1790,7 +1734,7 @@
                             // save current scene camera position
                             currentCameraScene = {quaternion: view.camera.camera3D.quaternion.clone(), scale: view.camera.camera3D.scale.clone(), position: view.camera.camera3D.position.clone()};
                             // Launch preview of last computed orientation
-                            previewResection();
+                            showResection();
                         }
                     }
 
@@ -1917,6 +1861,8 @@
 
             }
           document.getElementById("switchButton").addEventListener("change", filterThumbnails);
+          document.getElementById("goButton").addEventListener("click", event => { computeResection(event, document.getElementById('img').src.split('/').pop(), true); });
+
 </script>
     </body>
 </html>

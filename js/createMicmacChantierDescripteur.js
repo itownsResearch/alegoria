@@ -92,7 +92,7 @@ function createMicmacChantierDescripteur(){
     }
 
     //php script to write the xml file
-    var urlC2 = "createMicmacChantierDescripteur.php";
+    var urlC2 = "php/createMicmacChantierDescripteur.php";
 
     //open a connection to the server
     xhrC2.open("POST", urlC2, true);

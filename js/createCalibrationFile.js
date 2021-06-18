@@ -55,18 +55,17 @@ function createCalib(){
     subsubsubElement5.textContent = imageXX_width/2 + ' '+ imageXX_height/2;
     subsubElement5.appendChild(subsubsubElement5);
 
-            
     var xhrC;
-            
+
     if (window.XMLHttpRequest) { // Mozilla, Safari, ...
-            
+
         xhrC = new XMLHttpRequest();
     } else if (window.ActiveXObject) { // IE 8 and older
         xhrC = new ActiveXObject("Microsoft.XMLHTTP");
     }
 
     //php script to write the xml file
-    var urlC = "createCalibrationFile.php";
+    var urlC = "php/createCalibrationFile.php";
 
     //open a connection to the server
     xhrC.open("POST", urlC, true);
@@ -79,8 +78,6 @@ function createCalib(){
 
 
 }
-
-    
 
 
 

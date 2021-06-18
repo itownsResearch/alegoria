@@ -5,10 +5,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors = [];
         $path = '../data/';
 	$extensions = ['jpg', 'jpeg', 'png', 'gif'];
-		
         $all_files = count($_FILES['files']['tmp_name']);
 
-        for ($i = 0; $i < $all_files; $i++) {  
+        for ($i = 0; $i < $all_files; $i++) {
 		$file_name = $_FILES['files']['name'][$i];
 		$file_tmp = $_FILES['files']['tmp_name'][$i];
 		$file_type = $_FILES['files']['type'][$i];
